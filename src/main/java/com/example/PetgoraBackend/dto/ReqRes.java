@@ -1,6 +1,6 @@
 package com.example.PetgoraBackend.dto;
 
-import com.example.PetgoraBackend.entities.User;
+import com.example.PetgoraBackend.entities.OurUsers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -19,10 +19,11 @@ public class ReqRes {
     private String refreshToken;
     private String expirationTime;
     private String name;
+    private String city;
     private String role;
     private String email;
     private String password;
-    private User user;
-    private List<User> userList;
+    private OurUsers ourUsers;
+    private List<OurUsers> ourUsersList;
 
 }

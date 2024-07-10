@@ -19,7 +19,6 @@ import java.io.IOException;
 
 @Component
 public class JWTAuthFilter extends OncePerRequestFilter {
-
     @Autowired
     private JWTUtils jwtUtils;
 
