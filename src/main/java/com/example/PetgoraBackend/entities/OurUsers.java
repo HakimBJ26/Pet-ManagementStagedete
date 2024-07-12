@@ -25,9 +25,14 @@ public class OurUsers implements UserDetails {
     private String city;
     private String role;
 
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return List.of(new SimpleGrantedAuthority(role));
+//    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
     }
 
     @Override
@@ -54,4 +59,9 @@ public class OurUsers implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public String getName() {
+        return this.name;
+    }
+
 }

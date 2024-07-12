@@ -3,11 +3,20 @@ package com.example.PetgoraBackend.service;
 import com.example.PetgoraBackend.dto.ReqRes;
 import com.example.PetgoraBackend.entities.OurUsers;
 import com.example.PetgoraBackend.repository.UsersRepo;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+import org.hibernate.annotations.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,40 +35,28 @@ public class UsersManagementService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public ReqRes register(ReqRes registrationRequest){
-        ReqRes resp = new ReqRes();
+    public ReqRes register(ReqRes registrationRequest) {
+        ReqRes resp;
 
         try {
-            // Vérifier si l'email existe déjà
-            Optional<OurUsers> existingUser = usersRepo.findByEmail(registrationRequest.getEmail());
+            Optional<OurUsers> existingUser = usersRepo.findByEmail(registrationRequest.email());
             if (existingUser.isPresent()) {
-                resp.setMessage("Email already in use");
-                resp.setStatusCode(400);
-                return resp;
             }
-
-            // Créer un nouvel utilisateur
-            OurUsers ourOurUsers = new OurUsers();
-            ourOurUsers.setEmail(registrationRequest.getEmail());
-            ourOurUsers.setCity(registrationRequest.getCity());
-            ourOurUsers.setRole(registrationRequest.getRole());
-            ourOurUsers.setName(registrationRequest.getName());
-            ourOurUsers.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
-            OurUsers ourUsersResult = usersRepo.save(ourOurUsers);
-
+            OurUsers ourUsers = new OurUsers();
+            ourUsers.setEmail(registrationRequest.email());
+            ourUsers.setCity(registrationRequest.city());
+            ourUsers.setRole(registrationRequest.role());
+            ourUsers.setName(registrationRequest.name());
+            ourUsers.setPassword(passwordEncoder.encode(registrationRequest.password()));
+            OurUsers ourUsersResult = usersRepo.save(ourUsers);
             if (ourUsersResult.getId() > 0) {
-                resp.setOurUsers(ourUsersResult);
-                resp.setMessage("User Saved Successfully");
-                resp.setStatusCode(200);
+                return new ReqRes(200, "User Saved Successfully", null, null, null, null, null, null, null, null, null, ourUsersResult, null);
             }
-
         } catch (Exception e) {
-            resp.setStatusCode(500);
-            resp.setError(e.getMessage());
+            return new ReqRes(500, e.getMessage(), null, null, null, null, null, null, null, null, null, null, null);
         }
-        return resp;
+        return new ReqRes(500, "Unknown Error", null, null, null, null, null, null, null, null, null, null, null);
     }
-
 
     public ReqRes login(ReqRes loginRequest){
         ReqRes response = new ReqRes();
@@ -70,7 +67,9 @@ public class UsersManagementService {
             var user = usersRepo.findByEmail(loginRequest.getEmail()).orElseThrow();
             var jwt = jwtUtils.generateToken(user);
             var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
-            response.setStatusCode(200);
+             user.setPassword(response.password());
+
+            response.(200);
             response.setToken(jwt);
             response.setRole(user.getRole());
             response.setRefreshToken(refreshToken);
@@ -88,28 +87,38 @@ public class UsersManagementService {
 
 
 
-    public ReqRes refreshToken(ReqRes refreshTokenReqiest){
-        ReqRes response = new ReqRes();
-        try{
-            String ourEmail = jwtUtils.extractUsername(refreshTokenReqiest.getToken());
-            OurUsers users = usersRepo.findByEmail(ourEmail).orElseThrow();
-            if (jwtUtils.isTokenValid(refreshTokenReqiest.getToken(), users)) {
-                var jwt = jwtUtils.generateToken(users);
-                response.setStatusCode(200);
-                response.setToken(jwt);
-                response.setRefreshToken(refreshTokenReqiest.getToken());
-                response.setExpirationTime("24Hr");
-                response.setMessage("Successfully Refreshed Token");
-            }
-            response.setStatusCode(200);
-            return response;
+    public String refreshToken(String token) {
+        try {
+            String userEmail = jwtUtils.extractUsername(token);
+            Optional<OurUsers> optionalUser = usersRepo.findByEmail(userEmail);
 
-        }catch (Exception e){
-            response.setStatusCode(500);
-            response.setMessage(e.getMessage());
-            return response;
+            if (optionalUser.isPresent()) {
+                OurUsers user = optionalUser.get();
+
+                if (jwtUtils.isTokenValid(token, user)) {
+                    String newJwt = jwtUtils.generateToken(user);
+                    return "Successfully Refreshed Token";
+                } else {
+                    throw new RuntimeException("Invalid token");
+                }
+            } else {
+                throw new RuntimeException("User not found");
+            }
+        } catch (MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            throw new RuntimeException("Invalid token format or structure");
+        } catch (SignatureException e) {
+            throw new RuntimeException("Invalid token signature");
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("Token expired");
+        } catch (Exception e) {
+            throw new RuntimeException("Token refresh failed: " + e.getMessage());
         }
     }
+}
+
+
+
+
 
 
     public ReqRes getAllUsers() {
@@ -139,7 +148,7 @@ public class UsersManagementService {
         try {
             OurUsers usersById = usersRepo.findById(id).orElseThrow(() -> new RuntimeException("User Not found"));
             reqRes.setOurUsers(usersById);
-            reqRes.setStatusCode(200);
+            reqRes.statusCode(200);
             reqRes.setMessage("Users with id '" + id + "' found successfully");
         } catch (Exception e) {
             reqRes.setStatusCode(500);
@@ -179,9 +188,8 @@ public class UsersManagementService {
                 existingOurUsers.setCity(updatedOurUsers.getCity());
                 existingOurUsers.setRole(updatedOurUsers.getRole());
 
-                // Check if password is present in the request
                 if (updatedOurUsers.getPassword() != null && !updatedOurUsers.getPassword().isEmpty()) {
-                    // Encode the password and update it
+
                     existingOurUsers.setPassword(passwordEncoder.encode(updatedOurUsers.getPassword()));
                 }
 
@@ -219,6 +227,39 @@ public class UsersManagementService {
             reqRes.setMessage("Error occurred while getting user info: " + e.getMessage());
         }
         return reqRes;
-
     }
+
+    public ReqRes AdminupdateUser(Integer userId, OurUsers updatedOurUsers) {
+        ReqRes reqRes = new ReqRes();
+        try {
+            Optional<OurUsers> userOptional = usersRepo.findById(userId);
+            if (userOptional.isPresent()) {
+                OurUsers existingOurUsers = userOptional.get();
+                existingOurUsers.setEmail(updatedOurUsers.getEmail());
+                existingOurUsers.setName(updatedOurUsers.getName());
+                existingOurUsers.setCity(updatedOurUsers.getCity());
+                existingOurUsers.setRole(updatedOurUsers.getRole());
+
+                if (updatedOurUsers.getPassword() != null && !updatedOurUsers.getPassword().isEmpty()) {
+                    existingOurUsers.setPassword(passwordEncoder.encode(updatedOurUsers.getPassword()));
+                }
+
+                OurUsers savedOurUsers = usersRepo.save(existingOurUsers);
+                reqRes.ourUsers(savedOurUsers);
+                reqRes.statusCode(200);
+                reqRes.message("User updated successfully");
+            } else {
+                reqRes.setStatusCode(404);
+                reqRes.setMessage("User not found for update");
+            }
+        } catch (Exception e) {
+            reqRes.setStatusCode(500);
+            reqRes.setMessage("Error occurred while updating user: " + e.getMessage());
+        }
+        return reqRes;
+    }
+
+
 }
+
+

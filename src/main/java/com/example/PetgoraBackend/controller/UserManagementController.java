@@ -4,7 +4,9 @@ import com.example.PetgoraBackend.dto.ReqRes;
 import com.example.PetgoraBackend.entities.OurUsers;
 import com.example.PetgoraBackend.service.UsersManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -12,24 +14,29 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
+//@RequestMapping("/api/auth")
 public class UserManagementController {
     @Autowired
     private UsersManagementService usersManagementService;
 
     @PostMapping("/auth/register")
-    public ResponseEntity<ReqRes> regeister(@RequestBody ReqRes reg){
+    public ResponseEntity<ReqRes> regeister(@RequestBody ReqRes reg) {
         return ResponseEntity.ok(usersManagementService.register(reg));
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req){
+    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
         return ResponseEntity.ok(usersManagementService.login(req));
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<ReqRes> refreshToken(@RequestBody ReqRes req){
+    public ResponseEntity<String> refreshToken(@RequestBody String req){
         return ResponseEntity.ok(usersManagementService.refreshToken(req));
     }
+
+
+}
+
 
     @GetMapping("/admin/get-all-users")
     public ResponseEntity<ReqRes> getAllUsers(){
@@ -56,10 +63,16 @@ public class UserManagementController {
         return  ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @DeleteMapping("/admin/delete/{userId}")
+    @DeleteMapping("/delete/{userId}")
     public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
-        return ResponseEntity.ok(usersManagementService.deleteUser(userId));
-    }
+        return ResponseEntity.ok(usersManagementService.deleteUser(userId)); }
 
+
+    @PutMapping("/admin/AdminupdateUser/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ReqRes> AdminupdateUser(@PathVariable Integer userId, @RequestBody OurUsers updatedOurUsers) {
+        ReqRes response = usersManagementService.AdminupdateUser(userId, updatedOurUsers);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
+    }
 
 }
