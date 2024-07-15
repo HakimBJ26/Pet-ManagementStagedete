@@ -35,7 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/auth/**","/delete").permitAll()
+                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/delete").permitAll()
                        // .requestMatchers( "/adminUpdateUser/**").hasAuthority("ADMIN")
                         //  .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                         //.requestMatchers("/user/**").hasAnyAuthority("USER")

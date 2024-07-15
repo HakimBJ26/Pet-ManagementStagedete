@@ -1,7 +1,6 @@
 package com.example.PetgoraBackend.service;
 
 
-import com.example.PetgoraBackend.dto.ReqRes;
 import com.example.PetgoraBackend.repository.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -22,7 +21,7 @@ public class OurUserDetailsService implements UserDetailsService {
 //        return usersRepo.findByEmail(username).orElseThrow();
 
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            return usersRepo.findByEmail(username)
+            return usersRepo.findUserByEmail(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
         }
 

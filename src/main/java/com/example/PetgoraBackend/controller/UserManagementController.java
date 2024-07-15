@@ -1,8 +1,7 @@
 package com.example.PetgoraBackend.controller;
 
-import com.example.PetgoraBackend.dto.ReqRes;
-import com.example.PetgoraBackend.entities.OurUsers;
-import com.example.PetgoraBackend.service.UsersManagementService;
+import com.example.PetgoraBackend.entity.UserDto;
+import com.example.PetgoraBackend.service.IUsersManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,65 +13,65 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-//@RequestMapping("/api/auth")
+@RequestMapping("/api/auth")
 public class UserManagementController {
-    @Autowired
-    private UsersManagementService usersManagementService;
+    private final IUsersManagementService usersManagementService;
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<ReqRes> regeister(@RequestBody ReqRes reg) {
-        return ResponseEntity.ok(usersManagementService.register(reg));
-    }
-
-    @PostMapping("/auth/login")
-    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.login(req));
-    }
-
-    @PostMapping("/auth/refresh")
-    public ResponseEntity<String> refreshToken(@RequestBody String req){
-        return ResponseEntity.ok(usersManagementService.refreshToken(req));
+    public UserManagementController(IUsersManagementService usersManagementService) {
+        this.usersManagementService = usersManagementService;
     }
 
 
-}
-
-
-    @GetMapping("/admin/get-all-users")
-    public ResponseEntity<ReqRes> getAllUsers(){
-        return ResponseEntity.ok(usersManagementService.getAllUsers());
-
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(usersManagementService.registerNewUser(userDto));
     }
 
-    @GetMapping("/admin/get-users/{userId}")
-    public ResponseEntity<ReqRes> getUSerByID(@PathVariable Integer userId){
-        return ResponseEntity.ok(usersManagementService.getUsersById(userId));
-
-    }
-
-    @PutMapping("/admin/update/{userId}")
-    public ResponseEntity<ReqRes> updateUser(@PathVariable Integer userId, @RequestBody OurUsers reqres){
-        return ResponseEntity.ok(usersManagementService.updateUser(userId, reqres));
-    }
-
-    @GetMapping("/adminuser/get-profile")
-    public ResponseEntity<ReqRes> getMyProfile(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        ReqRes response = usersManagementService.getMyInfo(email);
-        return  ResponseEntity.status(response.getStatusCode()).body(response);
-    }
-
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
-        return ResponseEntity.ok(usersManagementService.deleteUser(userId)); }
-
-
-    @PutMapping("/admin/AdminupdateUser/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ReqRes> AdminupdateUser(@PathVariable Integer userId, @RequestBody OurUsers updatedOurUsers) {
-        ReqRes response = usersManagementService.AdminupdateUser(userId, updatedOurUsers);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
-    }
+//    @PostMapping("/auth/login")
+//    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
+//        return ResponseEntity.ok(usersManagementService.login(req));
+//    }
+//
+//    @PostMapping("/auth/refresh")
+//    public ResponseEntity<String> refreshToken(@RequestBody String req){
+//        return ResponseEntity.ok(usersManagementService.refreshToken(req));
+//    }
+//
+//    @GetMapping("/admin/get-all-users")
+//    public ResponseEntity<ReqRes> getAllUsers(){
+//        return ResponseEntity.ok(usersManagementService.getAllUsers());
+//
+//    }
+//
+//    @GetMapping("/admin/get-users/{userId}")
+//    public ResponseEntity<ReqRes> getUSerByID(@PathVariable Integer userId){
+//        return ResponseEntity.ok(usersManagementService.getUsersById(userId));
+//
+//    }
+//
+//    @PutMapping("/admin/update/{userId}")
+//    public ResponseEntity<ReqRes> updateUser(@PathVariable Integer userId, @RequestBody OurUsers reqres){
+//        return ResponseEntity.ok(usersManagementService.updateUser(userId, reqres));
+//    }
+//
+//    @GetMapping("/adminuser/get-profile")
+//    public ResponseEntity<ReqRes> getMyProfile(){
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String email = authentication.getName();
+//        ReqRes response = usersManagementService.getMyInfo(email);
+//        return  ResponseEntity.status(response.getStatusCode()).body(response);
+//    }
+//
+//    @DeleteMapping("/delete/{userId}")
+//    public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
+//        return ResponseEntity.ok(usersManagementService.deleteUser(userId)); }
+//
+//
+//    @PutMapping("/admin/AdminupdateUser/{userId}")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//    public ResponseEntity<ReqRes> AdminupdateUser(@PathVariable Integer userId, @RequestBody OurUsers updatedOurUsers) {
+//        ReqRes response = usersManagementService.AdminupdateUser(userId, updatedOurUsers);
+//        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
+//    }
 
 }

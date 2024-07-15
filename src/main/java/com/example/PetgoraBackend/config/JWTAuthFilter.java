@@ -1,6 +1,7 @@
 package com.example.PetgoraBackend.config;
 
 import com.example.PetgoraBackend.service.JWTUtils;
+//import com.example.PetgoraBackend.service.OurUserDetailsService;
 import com.example.PetgoraBackend.service.OurUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +24,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     private JWTUtils jwtUtils;
 
     @Autowired
-    private OurUserDetailsService ourUserDetailsService;
+   private OurUserDetailsService ourUserDetailsService;
 
 
     @Override
