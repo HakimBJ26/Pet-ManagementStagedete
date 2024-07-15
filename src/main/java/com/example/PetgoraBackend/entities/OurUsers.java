@@ -1,7 +1,6 @@
 package com.example.PetgoraBackend.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "ourusers")
 @Data
-public class User implements UserDetails {
+public class OurUsers implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
