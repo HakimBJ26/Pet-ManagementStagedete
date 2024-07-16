@@ -21,14 +21,18 @@ public class JWTUtils {
 
     private final SecretKey key;
     private final long expirationTime;
+    private final long refreshExpirationTime;
+
 
     public JWTUtils(@Value("${jwt.secret.key}") String secretKey,
-                    @Value("${jwt.expiration.duration}") long expirationTime) {
+                    @Value("${jwt.expiration.duration}") long expirationTime,
+                    @Value("${jwt.refresh.expiration.duration}") long refreshExpirationTime) {
 
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
 
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.expirationTime = expirationTime;
+        this.refreshExpirationTime = refreshExpirationTime;
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -40,7 +44,6 @@ public class JWTUtils {
                 .compact();
     }
 
-
     public ResponseCookie generateJwtCookie(UserDetails userDetails) {
         String jwt = generateToken(userDetails);
         return ResponseCookie.from("jwt", jwt)
@@ -51,6 +54,28 @@ public class JWTUtils {
                 .sameSite("Strict")
                 .build();
     }
+
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        long refreshTokenDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenDuration))
+                .signWith(key)
+                .compact();
+    }
+    public ResponseCookie generateRefreshTokenCookie(UserDetails userDetails) {
+        String refreshToken = generateRefreshToken(userDetails);
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshExpirationTime / 1000)
+                .sameSite("Strict")
+                .build();
+    }
+
 
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);

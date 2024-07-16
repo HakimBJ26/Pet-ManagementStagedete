@@ -10,6 +10,8 @@ import com.example.PetgoraBackend.repository.UsersRepo;
 import com.example.PetgoraBackend.service.IUsersManagementService;
 import com.example.PetgoraBackend.config.JWTUtils;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -70,12 +72,10 @@ public class UserServiceImp implements IUsersManagementService {
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
-            // Authentifier l'utilisateur
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userLoginDto.email(), userLoginDto.password());
             authenticationManager.authenticate(authenticationToken);
 
-            // Générer le cookie JWT
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     user.getEmail(), user.getPassword(), Collections.emptyList());
             ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
@@ -88,37 +88,6 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
-//    @Override
-//    public UserDto updateUserProfile(UserDto userDto) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String currentEmail = authentication.getName();
-//
-//        System.out.println(currentEmail);
-//
-//        Optional<User> currentUserOptional = usersRepo.findUserByEmail(currentEmail);
-//        if (currentUserOptional.isPresent()) {
-//            User currentUser = currentUserOptional.get();
-//
-//            // Vérifiez si le nouvel email existe déjà pour un autre utilisateur
-//            if (!currentEmail.equals(userDto.email())) {
-//                Optional<User> newUserWithEmailOptional = usersRepo.findUserByEmail(userDto.email());
-//                if (newUserWithEmailOptional.isPresent()) {
-//                    throw new IllegalArgumentException("Email already in use: " + userDto.email());
-//                }
-//            }
-//            // Mettre à jour les informations de l'utilisateur
-//            currentUser.setName(userDto.name());
-//            currentUser.setEmail(userDto.email());
-//
-//            User updatedUser = usersRepo.save(currentUser);
-//            // Retourner l'utilisateur mis à jour en tant que UserDto
-//            return UserMapper.INSTANCE.toUserDto(updatedUser);
-//        } else {
-//            // L'utilisateur n'a pas été trouvé
-//            throw new EntityNotFoundException("User with email: " + currentEmail + " not found");
-//        }
-//    }
-
     @Override
     public UserDto updateUserProfile(UserDto userDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -128,28 +97,57 @@ public class UserServiceImp implements IUsersManagementService {
         if (currentUserOptional.isPresent()) {
             User currentUser = currentUserOptional.get();
 
-            // Vérifiez si le nouvel email existe déjà pour un autre utilisateur
             if (!currentEmail.equals(userDto.email())) {
                 Optional<User> newUserWithEmailOptional = usersRepo.findUserByEmail(userDto.email());
                 if (newUserWithEmailOptional.isPresent()) {
                     throw new IllegalArgumentException("Email already in use: " + userDto.email());
                 }
             }
-
-            // Mettre à jour les informations de l'utilisateur
             currentUser.setName(userDto.name());
             currentUser.setEmail(userDto.email());
 
-            // Sauvegarder les modifications dans la base de données
             User updatedUser = usersRepo.save(currentUser);
 
-            // Retourner l'utilisateur mis à jour en tant que UserDto
             return UserMapper.INSTANCE.toUserDto(updatedUser);
         } else {
-            // L'utilisateur n'a pas été trouvé
+
             throw new EntityNotFoundException("User with email: " + currentEmail + " not found");
         }
     }
+
+
+    @Override
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    String refreshToken = cookie.getValue();
+                    if (jwtUtils.isTokenExpired(refreshToken)) {
+                        return ResponseEntity.status(401).body("Refresh token is expired");
+                    }
+                    String username = jwtUtils.extractUsername(refreshToken);
+                    UserDetails userDetails = usersRepo.findUserByEmail(username)
+                            .map(user -> new org.springframework.security.core.userdetails.User(
+                                    user.getEmail(), user.getPassword(), Collections.emptyList()))
+                            .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+
+                    if (jwtUtils.isTokenValid(refreshToken, userDetails)) {
+                        ResponseCookie newJwtCookie = jwtUtils.generateJwtCookie(userDetails);
+                        response.addHeader(HttpHeaders.SET_COOKIE, newJwtCookie.toString());
+                        return ResponseEntity.ok("Token refreshed successfully");
+                    } else {
+                        return ResponseEntity.status(401).body("Invalid refresh token");
+                    }
+                }
+            }
+        }
+        return ResponseEntity.status(400).body("Refresh token not found");
+    }
 }
+
+
+
+
 
 
