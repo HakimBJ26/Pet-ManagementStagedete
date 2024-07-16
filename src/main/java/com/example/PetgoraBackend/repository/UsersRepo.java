@@ -1,13 +1,13 @@
 package com.example.PetgoraBackend.repository;
 
-import com.example.PetgoraBackend.entities.OurUsers;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.PetgoraBackend.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface UsersRepo extends JpaRepository<OurUsers, Integer> {
-        Optional<OurUsers> findByEmail(String email);
 
+public interface  UsersRepo extends JpaRepository<User, Integer> {
+
+        Optional<User> findUserByEmail(String email);
 }

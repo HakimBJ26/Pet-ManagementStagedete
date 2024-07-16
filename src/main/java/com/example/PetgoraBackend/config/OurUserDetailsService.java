@@ -1,4 +1,4 @@
-package com.example.PetgoraBackend.service;
+package com.example.PetgoraBackend.config;
 
 
 import com.example.PetgoraBackend.repository.UsersRepo;
@@ -11,10 +11,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class OurUserDetailsService implements UserDetailsService {
 
+
     @Autowired
     private UsersRepo usersRepo;
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usersRepo.findByEmail(username).orElseThrow();
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        return usersRepo.findByEmail(username).orElseThrow();
+
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+            return usersRepo.findUserByEmail(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        }
+
+
+
+
+
+
     }
-}

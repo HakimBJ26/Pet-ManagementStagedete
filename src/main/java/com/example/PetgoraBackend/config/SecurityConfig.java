@@ -1,7 +1,6 @@
 package com.example.PetgoraBackend.config;
 
 
-import com.example.PetgoraBackend.service.OurUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +37,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/auth/**","/admin/**").permitAll()
+                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/api/auth/**").permitAll()
 
+                       // .requestMatchers( "/adminUpdateUser/**").hasAuthority("ADMIN")
+                        //  .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
+                        //.requestMatchers("/user/**").hasAnyAuthority("USER")
+                        // .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
+                    //    .requestMatchers("/admin/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

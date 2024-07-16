@@ -1,75 +1,40 @@
 package com.example.PetgoraBackend.controller;
 
-import com.example.PetgoraBackend.dto.ReqRes;
-import com.example.PetgoraBackend.entities.OurUsers;
-import com.example.PetgoraBackend.service.UsersManagementService;
-import org.apache.juli.logging.Log;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import com.example.PetgoraBackend.entity.UserDto;
+import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.service.IUsersManagementService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
 
 
-@Slf4j
+
 @RestController
-@CrossOrigin("http://localhost:3000")
+@RequestMapping("/api/auth")
 public class UserManagementController {
-    @Autowired
-    private UsersManagementService usersManagementService;
+    private final IUsersManagementService usersManagementService;
 
-    @PostMapping("/auth/register")
-    public ResponseEntity<ReqRes> regeister(@RequestBody ReqRes reg) {
-        return ResponseEntity.ok(usersManagementService.register(reg));
+    public UserManagementController(IUsersManagementService usersManagementService) {
+        this.usersManagementService = usersManagementService;
     }
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.login(req));
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(usersManagementService.registerNewUser(userDto));
     }
 
-    @PostMapping("/auth/refresh")
-    public ResponseEntity<ReqRes> refreshToken(@RequestBody ReqRes req) {
-        return ResponseEntity.ok(usersManagementService.refreshToken(req));
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@RequestBody UserLoginDto userLoginDto, HttpServletResponse response) {
+
+        return usersManagementService.UserLogin(userLoginDto, response);
+    }
+    @PutMapping("updateProfile")
+    public UserDto updateUserProfile(@RequestBody UserDto userDto) {
+        return usersManagementService.updateUserProfile(userDto);
     }
 
-    @GetMapping("/admin/get-all-users")
-    public ResponseEntity<ReqRes> getAllUsers() {
-        return ResponseEntity.ok(usersManagementService.getAllUsers());
 
-    }
 
-    @GetMapping("/admin/get-users/{userId}")
-    public ResponseEntity<ReqRes> getUSerByID(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usersManagementService.getUsersById(userId));
-
-    }
-
-    @PutMapping("/admin/update/{userId}")
-    public ResponseEntity<ReqRes> updateUser(@PathVariable Integer userId, @RequestBody OurUsers reqres) {
-        return ResponseEntity.ok(usersManagementService.updateUser(userId, reqres));
-    }
-
-    @GetMapping("/adminuser/get-profile")
-    public ResponseEntity<ReqRes> getMyProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info(""+authentication);
-
-        String email = authentication.getName();
-        ReqRes response = usersManagementService.getMyInfo(email);
-        return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
-    @PutMapping("/user/update-profile")
-    public ResponseEntity<ReqRes> updateUserProfile(@RequestBody OurUsers updatedUser) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        ReqRes response = usersManagementService.updateUserProfile(email, updatedUser);
-        return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
 
 }
