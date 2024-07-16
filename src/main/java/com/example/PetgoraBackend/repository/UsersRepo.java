@@ -1,7 +1,8 @@
 package com.example.PetgoraBackend.repository;
 
-import com.example.PetgoraBackend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.PetgoraBackend.entity.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 

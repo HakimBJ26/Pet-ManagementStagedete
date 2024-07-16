@@ -1,4 +1,4 @@
-package com.example.PetgoraBackend.service;
+package com.example.PetgoraBackend.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

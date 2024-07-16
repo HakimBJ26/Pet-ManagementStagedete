@@ -8,7 +8,8 @@ import com.example.PetgoraBackend.entity.UserLoginDto;
 import com.example.PetgoraBackend.mapper.UserMapper;
 import com.example.PetgoraBackend.repository.UsersRepo;
 import com.example.PetgoraBackend.service.IUsersManagementService;
-import com.example.PetgoraBackend.service.JWTUtils;
+import com.example.PetgoraBackend.config.JWTUtils;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -16,11 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -44,8 +46,7 @@ public class UserServiceImp implements IUsersManagementService {
 
     }
 
-
-
+    @Override
     public UserDto registerNewUser(UserDto userDto) {
         Optional<User> user = this.usersRepo.findUserByEmail(userDto.email());
 
@@ -62,15 +63,10 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
-
-
-
-
-
-
+    @Override
     public ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response) {
         try {
-            // Vérifier si l'utilisateur existe dans la base de données
+
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
@@ -92,13 +88,68 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
+//    @Override
+//    public UserDto updateUserProfile(UserDto userDto) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String currentEmail = authentication.getName();
+//
+//        System.out.println(currentEmail);
+//
+//        Optional<User> currentUserOptional = usersRepo.findUserByEmail(currentEmail);
+//        if (currentUserOptional.isPresent()) {
+//            User currentUser = currentUserOptional.get();
+//
+//            // Vérifiez si le nouvel email existe déjà pour un autre utilisateur
+//            if (!currentEmail.equals(userDto.email())) {
+//                Optional<User> newUserWithEmailOptional = usersRepo.findUserByEmail(userDto.email());
+//                if (newUserWithEmailOptional.isPresent()) {
+//                    throw new IllegalArgumentException("Email already in use: " + userDto.email());
+//                }
+//            }
+//            // Mettre à jour les informations de l'utilisateur
+//            currentUser.setName(userDto.name());
+//            currentUser.setEmail(userDto.email());
+//
+//            User updatedUser = usersRepo.save(currentUser);
+//            // Retourner l'utilisateur mis à jour en tant que UserDto
+//            return UserMapper.INSTANCE.toUserDto(updatedUser);
+//        } else {
+//            // L'utilisateur n'a pas été trouvé
+//            throw new EntityNotFoundException("User with email: " + currentEmail + " not found");
+//        }
+//    }
 
+    @Override
+    public UserDto updateUserProfile(UserDto userDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
 
+        Optional<User> currentUserOptional = usersRepo.findUserByEmail(currentEmail);
+        if (currentUserOptional.isPresent()) {
+            User currentUser = currentUserOptional.get();
 
+            // Vérifiez si le nouvel email existe déjà pour un autre utilisateur
+            if (!currentEmail.equals(userDto.email())) {
+                Optional<User> newUserWithEmailOptional = usersRepo.findUserByEmail(userDto.email());
+                if (newUserWithEmailOptional.isPresent()) {
+                    throw new IllegalArgumentException("Email already in use: " + userDto.email());
+                }
+            }
 
+            // Mettre à jour les informations de l'utilisateur
+            currentUser.setName(userDto.name());
+            currentUser.setEmail(userDto.email());
 
+            // Sauvegarder les modifications dans la base de données
+            User updatedUser = usersRepo.save(currentUser);
 
-
-
+            // Retourner l'utilisateur mis à jour en tant que UserDto
+            return UserMapper.INSTANCE.toUserDto(updatedUser);
+        } else {
+            // L'utilisateur n'a pas été trouvé
+            throw new EntityNotFoundException("User with email: " + currentEmail + " not found");
+        }
+    }
 }
+
 

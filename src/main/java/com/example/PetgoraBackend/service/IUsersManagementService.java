@@ -9,8 +9,8 @@ public interface IUsersManagementService {
 
     UserDto registerNewUser(UserDto userDto);
 
-  //  UserDto UserLogin (UserLoginDto UserLoginDto);
-     ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response);
+    //  UserDto UserLogin (UserLoginDto UserLoginDto);
+    ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response);
 
-
-    }
+     UserDto updateUserProfile(UserDto UserDto);
+}

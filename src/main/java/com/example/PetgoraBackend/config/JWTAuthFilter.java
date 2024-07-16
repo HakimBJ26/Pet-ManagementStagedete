@@ -1,7 +1,5 @@
 package com.example.PetgoraBackend.config;
 
-import com.example.PetgoraBackend.service.JWTUtils;
-import com.example.PetgoraBackend.service.OurUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -71,12 +69,15 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             for (Cookie cookie : cookies) {
                 if ("jwt".equals(cookie.getName())) {
                     String jwt = cookie.getValue();
-                    UserDetails userDetails = ourUserDetailsService.loadUserByUsername(jwtUtils.extractUsername(jwt));
-                    if (jwtUtils.isTokenValid(jwt, userDetails)) {
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    String username = jwtUtils.extractUsername(jwt);
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = ourUserDetailsService.loadUserByUsername(username);
+                        if (jwtUtils.isTokenValid(jwt, userDetails)) {
+                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        }
                     }
                 }
             }
