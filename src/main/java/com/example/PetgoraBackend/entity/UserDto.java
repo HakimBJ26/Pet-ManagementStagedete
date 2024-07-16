@@ -4,6 +4,12 @@ public record UserDto(
         String name,
         String city,
         String role,
-        String email
+
+        String email,
+        String password
+
+
 ) {
+
+
 }

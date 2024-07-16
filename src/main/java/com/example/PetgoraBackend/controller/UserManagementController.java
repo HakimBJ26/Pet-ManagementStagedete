@@ -1,11 +1,17 @@
 package com.example.PetgoraBackend.controller;
 
+import com.example.PetgoraBackend.entity.User;
 import com.example.PetgoraBackend.entity.UserDto;
+import com.example.PetgoraBackend.entity.UserLoginDto;
 import com.example.PetgoraBackend.service.IUsersManagementService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -21,16 +27,22 @@ public class UserManagementController {
         this.usersManagementService = usersManagementService;
     }
 
-
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody UserDto userDto) {
         return ResponseEntity.ok(usersManagementService.registerNewUser(userDto));
     }
 
-//    @PostMapping("/auth/login")
-//    public ResponseEntity<ReqRes> login(@RequestBody ReqRes req) {
-//        return ResponseEntity.ok(usersManagementService.login(req));
-//    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@RequestBody UserLoginDto userLoginDto, HttpServletResponse response) {
+
+        return usersManagementService.UserLogin(userLoginDto, response);
+    }
+
+
+
+
+
 //
 //    @PostMapping("/auth/refresh")
 //    public ResponseEntity<String> refreshToken(@RequestBody String req){

@@ -2,7 +2,6 @@ package com.example.PetgoraBackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,10 +25,6 @@ public class User implements UserDetails {
     private String city;
     private String role;
 
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority(role));
-//    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
