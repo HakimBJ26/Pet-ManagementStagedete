@@ -15,7 +15,7 @@ public interface IUsersManagementService {
 
      UserDto updateUserProfile(UserDto UserDto);
 
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response);
+    ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response);
 
 
 }

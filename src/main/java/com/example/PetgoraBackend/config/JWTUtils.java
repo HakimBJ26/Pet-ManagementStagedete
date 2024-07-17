@@ -26,7 +26,9 @@ public class JWTUtils {
 
     public JWTUtils(@Value("${jwt.secret.key}") String secretKey,
                     @Value("${jwt.expiration.duration}") long expirationTime,
-                    @Value("${jwt.refresh.expiration.duration}") long refreshExpirationTime) {
+                    @Value("${jwt.refresh.expiration.duration:3600000}") long refreshExpirationTime)
+       {
+
 
             byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
 
@@ -34,6 +36,7 @@ public class JWTUtils {
         this.expirationTime = expirationTime;
         this.refreshExpirationTime = refreshExpirationTime;
     }
+
 
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
@@ -43,6 +46,26 @@ public class JWTUtils {
                 .signWith(key)
                 .compact();
     }
+
+    public ResponseCookie generateRefreshTokenCookie(UserDetails userDetails) {
+        String refreshToken = generateRefreshToken(userDetails);
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshExpirationTime / 1000)
+                .sameSite("Strict")
+                .build();
+    }
+    public String generateRefreshToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationTime))
+                .signWith(key)
+                .compact();
+    }
+
 
     public ResponseCookie generateJwtCookie(UserDetails userDetails) {
         String jwt = generateToken(userDetails);
@@ -56,26 +79,6 @@ public class JWTUtils {
     }
 
 
-    public String generateRefreshToken(UserDetails userDetails) {
-        long refreshTokenDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
-        return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenDuration))
-                .signWith(key)
-                .compact();
-    }
-    public ResponseCookie generateRefreshTokenCookie(UserDetails userDetails) {
-        String refreshToken = generateRefreshToken(userDetails);
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(refreshExpirationTime / 1000)
-                .sameSite("Strict")
-                .build();
-    }
-
 
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
@@ -87,6 +90,9 @@ public class JWTUtils {
                 .setSigningKey(key)
                 .build().parseClaimsJws(token);
         return claimsTFunction.apply(claimsJws.getBody());
+    }
+    public boolean isTokenValid(String token) {
+        return !isTokenExpired(token);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

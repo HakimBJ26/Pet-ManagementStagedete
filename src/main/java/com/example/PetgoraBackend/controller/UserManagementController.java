@@ -34,11 +34,11 @@ public class UserManagementController {
     public UserDto updateUserProfile(@RequestBody UserDto userDto) {
         return usersManagementService.updateUserProfile(userDto);
     }
-    @PostMapping("/refreshToken")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+@PostMapping("/refreshToken")
+     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         return usersManagementService.refreshToken(request, response);
     }
-
 
 
 

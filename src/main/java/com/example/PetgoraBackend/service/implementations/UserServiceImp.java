@@ -3,7 +3,6 @@ package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.entity.User;
 import com.example.PetgoraBackend.entity.UserDto;
-
 import com.example.PetgoraBackend.entity.UserLoginDto;
 import com.example.PetgoraBackend.mapper.UserMapper;
 import com.example.PetgoraBackend.repository.UsersRepo;
@@ -123,18 +122,11 @@ public class UserServiceImp implements IUsersManagementService {
             for (Cookie cookie : cookies) {
                 if ("refreshToken".equals(cookie.getName())) {
                     String refreshToken = cookie.getValue();
-                    if (jwtUtils.isTokenExpired(refreshToken)) {
-                        return ResponseEntity.status(401).body("Refresh token is expired");
-                    }
-                    String username = jwtUtils.extractUsername(refreshToken);
-                    UserDetails userDetails = usersRepo.findUserByEmail(username)
-                            .map(user -> new org.springframework.security.core.userdetails.User(
-                                    user.getEmail(), user.getPassword(), Collections.emptyList()))
-                            .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
-
-                    if (jwtUtils.isTokenValid(refreshToken, userDetails)) {
-                        ResponseCookie newJwtCookie = jwtUtils.generateJwtCookie(userDetails);
-                        response.addHeader(HttpHeaders.SET_COOKIE, newJwtCookie.toString());
+                    if (jwtUtils.isTokenValid(refreshToken)) {
+                        String username = jwtUtils.extractUsername(refreshToken);
+                        UserDetails userDetails = usersRepo.findUserByEmail(username).orElseThrow(() -> new EntityNotFoundException("User not found"));
+                        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+                        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
                         return ResponseEntity.ok("Token refreshed successfully");
                     } else {
                         return ResponseEntity.status(401).body("Invalid refresh token");
@@ -142,7 +134,7 @@ public class UserServiceImp implements IUsersManagementService {
                 }
             }
         }
-        return ResponseEntity.status(400).body("Refresh token not found");
+        return ResponseEntity.status(401).body("Refresh token is missing");
     }
 }
 

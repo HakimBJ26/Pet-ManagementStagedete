@@ -39,11 +39,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/api/auth/**").permitAll()
 
-                       // .requestMatchers( "/adminUpdateUser/**").hasAuthority("ADMIN")
-                        //  .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                        //.requestMatchers("/user/**").hasAnyAuthority("USER")
-                        // .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
-                    //    .requestMatchers("/admin/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
