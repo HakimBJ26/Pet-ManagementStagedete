@@ -22,10 +22,10 @@ public interface IUsersManagementService {
     ResponseEntity<String>deleteUserById(Long userId);
 
 
-     ResponseEntity<String> updateUserByAdmin(String userEmail, UserDto userDto);
+     ResponseEntity<String> updateUserByAdmin(Long userId, UserDto userDto);
 
 
-        List<UserDto> getAllUsers();
+    List<UserDto> getAllUsers();
 
     UserDto getUserById(Long userId);
 }

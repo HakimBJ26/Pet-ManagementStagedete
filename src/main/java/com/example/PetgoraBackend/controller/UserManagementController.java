@@ -54,9 +54,9 @@ public class UserManagementController {
         return ResponseEntity.ok(users);
     }
 
-    @PutMapping("/updateUserByAdmin/{userEmail}")
-    public ResponseEntity<String> updateUserByAdmin(@PathVariable String userEmail, @RequestBody UserDto userDto) {
-        return usersManagementService.updateUserByAdmin(userEmail, userDto);
+    @PutMapping("/updateUserByAdmin/{userId}")
+    public ResponseEntity<String> updateUserByAdmin(@PathVariable Long userId, @RequestBody UserDto userDto) {
+        return usersManagementService.updateUserByAdmin(userId, userDto);
     }
 
 

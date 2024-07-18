@@ -40,15 +40,7 @@ public class JWTUtils {
         this.refreshExpirationTime = refreshExpirationTime;
     }
 
-    void setHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        cookie.setSecure(true); // Ensure the cookie is sent over HTTPS only
 
-        response.addCookie(cookie);
-    }
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())

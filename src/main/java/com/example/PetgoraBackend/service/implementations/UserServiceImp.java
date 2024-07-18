@@ -72,10 +72,8 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
-    @Override
     public ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response) {
         try {
-
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
@@ -85,15 +83,24 @@ public class UserServiceImp implements IUsersManagementService {
 
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     user.getEmail(), user.getPassword(), Collections.emptyList());
+
             ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
             response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+            UserDto userDto = new UserDto(
+                    user.getId(),
+                    user.getName(),
+                    user.getCity(),
+                    user.getRole(),
+                    user.getEmail(),
+                    null
+            );
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(userDto);
 
         } catch (BadCredentialsException e) {
             throw new IllegalArgumentException("Incorrect email or password", e);
         }
-}
+    }
 
 
     @Override
@@ -126,15 +133,15 @@ public class UserServiceImp implements IUsersManagementService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateUserByAdmin(String userEmail, UserDto userDto) {
+    public ResponseEntity<String> updateUserByAdmin(Long userId, UserDto userDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
 
         User currentUser = usersRepo.findUserByEmail(currentEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Current user not found"));
 
-        User userToUpdate = usersRepo.findUserByEmail(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException("User with email: " + userEmail + " not found"));
+        User userToUpdate = usersRepo.findUserById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found"));
 
         if (!userToUpdate.getRole().equalsIgnoreCase("ADMIN")) {
 
@@ -144,7 +151,6 @@ public class UserServiceImp implements IUsersManagementService {
                         usersRepo.existsUserByEmail(userDto.email())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists.");
                 }
-
                 userToUpdate.setName(userDto.name());
                 userToUpdate.setEmail(userDto.email());
 
@@ -158,6 +164,7 @@ public class UserServiceImp implements IUsersManagementService {
             throw new AccessDeniedException("Administrators cannot update other administrators.");
         }
     }
+
 
     @Override
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
