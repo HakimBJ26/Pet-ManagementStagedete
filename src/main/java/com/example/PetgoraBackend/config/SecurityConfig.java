@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true) // Permet l'utilisation des annotations de sécurité de méthode
 @EnableWebSecurity
 public class SecurityConfig {
 
@@ -37,13 +39,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/api/auth/**").permitAll()
-
-                       // .requestMatchers( "/adminUpdateUser/**").hasAuthority("ADMIN")
-                        //  .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                        //.requestMatchers("/user/**").hasAnyAuthority("USER")
-                        // .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
-                    //    .requestMatchers("/admin/**").permitAll()
+                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/api/auth/**",
+                        "/configuration/ui",
+                        "/configuration/security",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/api-docs/**",
+                        "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
