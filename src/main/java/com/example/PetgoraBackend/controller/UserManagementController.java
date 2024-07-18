@@ -5,7 +5,9 @@ import com.example.PetgoraBackend.entity.UserLoginDto;
 import com.example.PetgoraBackend.service.IUsersManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,5 +65,18 @@ public class UserManagementController {
     @GetMapping("/getUserById/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(usersManagementService.getUserById(userId));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        usersManagementService.logout(response);
+        return ResponseEntity.ok("Logged out successfully.");
+    }
+
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> getUserProfile() {
+        UserDto userProfile = usersManagementService.getUserProfile();
+        return ResponseEntity.ok(userProfile);
     }
 }

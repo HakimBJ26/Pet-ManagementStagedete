@@ -198,7 +198,7 @@ public class UserServiceImp implements IUsersManagementService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: You do not have permission to delete users.");
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<UserDto> getAllUsers() {
         List<User> users = usersRepo.findAll();
@@ -215,6 +215,21 @@ public class UserServiceImp implements IUsersManagementService {
         return UserMapper.INSTANCE.toUserDto(user);
     }
 
+    @Override
+    public UserDto getUserProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+
+        Optional<User> userOptional = usersRepo.findUserByEmail(userEmail);
+        User user = userOptional.orElseThrow(() -> new EntityNotFoundException("User with email: " + userEmail + " not found"));
+
+        return UserMapper.INSTANCE.toUserDto(user);
+    }
+
+    public void logout(HttpServletResponse response) {
+        ResponseCookie deleteCookie = jwtUtils.getCleanJwtCookie();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+    }
 
 }
 
