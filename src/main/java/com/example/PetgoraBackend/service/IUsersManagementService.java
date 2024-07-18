@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface IUsersManagementService {
 
     UserDto registerNewUser(UserDto userDto);
@@ -13,9 +15,17 @@ public interface IUsersManagementService {
 
     ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response);
 
-     UserDto updateUserProfile(UserDto UserDto);
+    UserDto updateUserProfile(UserDto UserDto);
 
     ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response);
 
+    ResponseEntity<String>deleteUserById(Long userId);
 
+
+     ResponseEntity<String> updateUserByAdmin(String userEmail, UserDto userDto);
+
+
+        List<UserDto> getAllUsers();
+
+    UserDto getUserById(Long userId);
 }

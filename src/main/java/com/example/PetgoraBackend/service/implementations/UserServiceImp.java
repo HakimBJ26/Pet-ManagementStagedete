@@ -13,8 +13,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,11 +26,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class UserServiceImp implements IUsersManagementService {
 
     private final UsersRepo usersRepo;
@@ -85,7 +93,8 @@ public class UserServiceImp implements IUsersManagementService {
         } catch (BadCredentialsException e) {
             throw new IllegalArgumentException("Incorrect email or password", e);
         }
-    }
+}
+
 
     @Override
     public UserDto updateUserProfile(UserDto userDto) {
@@ -116,6 +125,41 @@ public class UserServiceImp implements IUsersManagementService {
 
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> updateUserByAdmin(String userEmail, UserDto userDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+
+        User currentUser = usersRepo.findUserByEmail(currentEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found"));
+
+        User userToUpdate = usersRepo.findUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email: " + userEmail + " not found"));
+
+        if (!userToUpdate.getRole().equalsIgnoreCase("ADMIN")) {
+
+            if (currentUser.getRole().equalsIgnoreCase("ADMIN")) {
+
+                if (!userDto.email().equalsIgnoreCase(userToUpdate.getEmail()) &&
+                        usersRepo.existsUserByEmail(userDto.email())) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists.");
+                }
+
+                userToUpdate.setName(userDto.name());
+                userToUpdate.setEmail(userDto.email());
+
+                User updatedUser = usersRepo.save(userToUpdate);
+
+                return ResponseEntity.ok("User updated successfully.");
+            } else {
+                throw new AccessDeniedException("Administrators are not allowed to update other administrators.");
+            }
+        } else {
+            throw new AccessDeniedException("Administrators cannot update other administrators.");
+        }
+    }
+
+    @Override
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -136,6 +180,35 @@ public class UserServiceImp implements IUsersManagementService {
         }
         return ResponseEntity.status(401).body("Refresh token is missing");
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public ResponseEntity<String> deleteUserById(Long userId) {
+        try {
+            usersRepo.deleteById(userId);
+            return ResponseEntity.ok("User deleted with success");
+        } catch (AccessDeniedException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: You do not have permission to delete users.");
+        }
+    }
+
+    @Override
+    public List<UserDto> getAllUsers() {
+        List<User> users = usersRepo.findAll();
+        return users.stream()
+                .map(UserMapper.INSTANCE::toUserDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDto getUserById(Long userId) {
+        Optional<User> userOptional = usersRepo.findUserById(userId);
+        User user = userOptional.orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found"));
+
+        return UserMapper.INSTANCE.toUserDto(user);
+    }
+
+
 }
 
 

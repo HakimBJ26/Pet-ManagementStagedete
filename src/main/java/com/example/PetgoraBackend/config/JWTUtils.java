@@ -4,6 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +40,15 @@ public class JWTUtils {
         this.refreshExpirationTime = refreshExpirationTime;
     }
 
+    void setHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        cookie.setSecure(true); // Ensure the cookie is sent over HTTPS only
 
+        response.addCookie(cookie);
+    }
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
@@ -46,6 +57,8 @@ public class JWTUtils {
                 .signWith(key)
                 .compact();
     }
+
+
 
     public ResponseCookie generateRefreshTokenCookie(UserDetails userDetails) {
         String refreshToken = generateRefreshToken(userDetails);
