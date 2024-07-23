@@ -5,8 +5,8 @@ public record UserDto(
         String name,
         String city,
         String role,
-
         String email,
+        String phone,
         String password
 
 
