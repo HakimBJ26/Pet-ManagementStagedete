@@ -90,4 +90,21 @@ public class UserManagementController {
         List<UserDto> unapprovedUsers = usersManagementService.getUnapprovedUsers();
         return ResponseEntity.ok(unapprovedUsers);
     }
+
+
+    @PostMapping("/sendResetPasswordEmail")
+    public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> requestBody) {
+        return usersManagementService.sendResetPasswordEmail(requestBody.get("email"));
+    }
+
+    @PostMapping("/verifyResetPasswordToken")
+    public ResponseEntity<String> verifyResetPasswordToken(@RequestBody Map<String, String> requestBody, HttpServletResponse response) {
+        return usersManagementService.verifyResetPasswordToken(requestBody.get("token"), response);
+    }
+
+    @PutMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, @CookieValue(value = "resetPasswordToken", required = false) String token,  HttpServletResponse response) {
+        return usersManagementService.resetPassword(requestBody.get("newPassword"), requestBody.get("confirmPassword"), token, response);
+    }
+
 }
