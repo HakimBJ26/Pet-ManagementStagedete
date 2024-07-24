@@ -4,7 +4,6 @@ import com.example.PetgoraBackend.entity.UserDto;
 import com.example.PetgoraBackend.entity.UserLoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -15,16 +14,22 @@ public interface IUsersManagementService {
 
     ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response);
 
-    UserDto updateUserProfile(UserDto UserDto);
+    UserDto updateUserProfile(UserDto userDto, HttpServletResponse response);
+
     ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response);
 
-    ResponseEntity<String>deleteUserById(Long userId);
+    ResponseEntity<String> deleteUserById(int userId);
 
-     ResponseEntity<String> updateUserByAdmin(Long userId, UserDto userDto);
+    ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto);
 
     List<UserDto> getAllUsers();
 
-    UserDto getUserById(Long userId);
-     void logout(HttpServletResponse response);
-    public UserDto getUserProfile();
+    UserDto getUserById(int userId);  // Changed Long to int
+
+    void logout(HttpServletResponse response);
+
+    UserDto getUserProfile();
+
 }
+
+

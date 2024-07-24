@@ -7,12 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,15 +26,15 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.registerNewUser(userDto));
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody UserLoginDto userLoginDto, HttpServletResponse response) {
         return usersManagementService.UserLogin(userLoginDto, response);
     }
 
-    @PutMapping("updateProfile")
-    public UserDto updateUserProfile(@RequestBody UserDto userDto) {
-        return usersManagementService.updateUserProfile(userDto);
+    @PutMapping("/updateProfile")
+    public ResponseEntity<UserDto> updateUserProfile(@RequestBody UserDto userDto, HttpServletResponse response) {
+        UserDto updatedUserDto = usersManagementService.updateUserProfile(userDto, response);
+        return ResponseEntity.ok(updatedUserDto);
     }
 
     @PostMapping("/refreshToken")
@@ -45,10 +43,9 @@ public class UserManagementController {
     }
 
     @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<String> deleteUser(@PathVariable int userId) {
         return usersManagementService.deleteUserById(userId);
     }
-
 
     @GetMapping("/GetAllUsers")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -57,13 +54,12 @@ public class UserManagementController {
     }
 
     @PutMapping("/updateUserByAdmin/{userId}")
-    public ResponseEntity<String> updateUserByAdmin(@PathVariable Long userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<String> updateUserByAdmin(@PathVariable int userId, @RequestBody UserDto userDto) { // Changed Long to int
         return usersManagementService.updateUserByAdmin(userId, userDto);
     }
 
-
     @GetMapping("/getUserById/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable int userId) {
         return ResponseEntity.ok(usersManagementService.getUserById(userId));
     }
 
@@ -72,7 +68,6 @@ public class UserManagementController {
         usersManagementService.logout(response);
         return ResponseEntity.ok("Logged out successfully.");
     }
-
 
     @GetMapping("/profile")
     public ResponseEntity<UserDto> getUserProfile() {

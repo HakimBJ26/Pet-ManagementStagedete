@@ -17,12 +17,12 @@ import java.io.IOException;
 
 @Component
 public class JWTAuthFilter extends OncePerRequestFilter {
+
     @Autowired
     private JWTUtils jwtUtils;
 
     @Autowired
-   private OurUserDetailsService ourUserDetailsService;
-
+    private OurUserDetailsService ourUserDetailsService;
 
     public JWTAuthFilter(JWTUtils jwtUtils, OurUserDetailsService ourUserDetailsService) {
         this.jwtUtils = jwtUtils;
@@ -34,25 +34,32 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
+            String accessToken = null;
+            String refreshToken = null;
+
             for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
-                    String jwt = cookie.getValue();
-                    String username = jwtUtils.extractUsername(jwt);
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UserDetails userDetails = ourUserDetailsService.loadUserByUsername(username);
-                        if (jwtUtils.isTokenValid(jwt, userDetails)) {
-                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                        }
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                } else if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                }
+            }
+
+            if (accessToken != null) {
+                String username = jwtUtils.extractUsername(accessToken);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = ourUserDetailsService.loadUserByUsername(username);
+                    if (jwtUtils.isTokenValid(accessToken, userDetails)) {
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 }
             }
+
+
         }
         filterChain.doFilter(request, response);
     }
-
-
-
 }

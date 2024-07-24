@@ -12,8 +12,7 @@ public record UserRegistrationModel (
         String role,
         String email,
         String password
-//        OurUsers ourUsers,
-//        List<OurUsers> ourUsersList
+
 
 ){
 }
