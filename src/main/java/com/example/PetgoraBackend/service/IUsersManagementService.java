@@ -24,11 +24,15 @@ public interface IUsersManagementService {
 
     List<UserDto> getAllUsers();
 
-    UserDto getUserById(int userId);  // Changed Long to int
+    UserDto getUserById(int userId);
 
     void logout(HttpServletResponse response);
 
     UserDto getUserProfile();
+
+
+    void approveUserByEmail(String email);
+     List<UserDto> getUnapprovedUsers() ;
 
 }
 

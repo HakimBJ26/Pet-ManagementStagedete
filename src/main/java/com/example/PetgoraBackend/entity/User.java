@@ -28,7 +28,7 @@ public class User implements UserDetails {
 
     private String role;
     private String phone;
-
+    private boolean approved = false;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
