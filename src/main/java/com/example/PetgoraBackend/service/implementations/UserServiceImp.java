@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.service.implementations;
 import com.example.PetgoraBackend.entity.User;
-import com.example.PetgoraBackend.entity.UserDto;
-import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.dto.UserDto;
+import com.example.PetgoraBackend.dto.UserLoginDto;
 import com.example.PetgoraBackend.mapper.UserMapper;
 import com.example.PetgoraBackend.repository.UsersRepo;
 import com.example.PetgoraBackend.service.IUsersManagementService;

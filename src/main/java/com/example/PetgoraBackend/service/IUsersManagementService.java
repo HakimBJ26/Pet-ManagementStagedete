@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.service;
 
-import com.example.PetgoraBackend.entity.UserDto;
-import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.dto.UserDto;
+import com.example.PetgoraBackend.dto.UserLoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
