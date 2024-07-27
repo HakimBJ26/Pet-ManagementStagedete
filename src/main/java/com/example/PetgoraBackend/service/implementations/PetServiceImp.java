@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.entity.Pet;
-import com.example.PetgoraBackend.entity.PetDto;
+import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
@@ -32,11 +32,11 @@ public class PetServiceImp implements IPetService {
     }
 
     @Override
-    public PetDto addPet(PetDto petDto, Integer Id) {
+    public PetDto addPet(PetDto petDto) {
         Pet pet = PetMapper.INSTANCE.toPet(petDto);
 
         // Set the owner based on the provided email
-        User owner = usersRepo.findUserById(Id)
+        User owner = usersRepo.findUserById(petDto.ownerId())
                 .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
         pet.setOwner(owner); // Assuming you have an owner field in Pet
 

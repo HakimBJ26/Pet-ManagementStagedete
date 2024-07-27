@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.mapper;
 
 import com.example.PetgoraBackend.entity.Pet;
-import com.example.PetgoraBackend.entity.PetDto;
+import com.example.PetgoraBackend.dto.PetDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

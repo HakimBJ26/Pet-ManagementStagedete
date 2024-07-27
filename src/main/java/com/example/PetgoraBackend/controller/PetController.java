@@ -1,8 +1,7 @@
 package com.example.PetgoraBackend.controller;
 
-import com.example.PetgoraBackend.entity.PetDto;
+import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.service.implementations.IPetService;
-import com.example.PetgoraBackend.service.implementations.PetServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +33,8 @@ public class PetController {
     }
 
     @PostMapping
-    public PetDto createPet(@RequestBody PetDto pet, @RequestParam Integer ownerId) {
-        return petService.addPet(pet, ownerId);
+    public PetDto createPet(@RequestBody PetDto pet) {
+        return petService.addPet(pet);
     }
 
     @DeleteMapping("/{id}")

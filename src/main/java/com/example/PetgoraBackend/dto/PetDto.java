@@ -1,7 +1,6 @@
-package com.example.PetgoraBackend.entity;
+package com.example.PetgoraBackend.dto;
 
 public record PetDto(
-        Integer id,
         String name,
         String breed,
         Integer age,
