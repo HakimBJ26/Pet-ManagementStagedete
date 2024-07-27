@@ -34,6 +34,12 @@ public interface IUsersManagementService {
     void approveUserByEmail(String email);
      List<UserDto> getUnapprovedUsers() ;
 
+
+    ResponseEntity<String> sendResetPasswordEmail(String email);
+
+    ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response);
+    ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response);
+
 }
 
 

@@ -29,6 +29,11 @@ public class User implements UserDetails {
     private String role;
     private String phone;
     private boolean approved = false;
+    private boolean resetPasswordRequested;
+
+    private String resetPasswordToken;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));

@@ -28,10 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -309,6 +306,74 @@ public class UserServiceImp implements IUsersManagementService {
 
 
 
+    @Override
+    public ResponseEntity<String> sendResetPasswordEmail(String email) {
+        Optional<User> userOptional = usersRepo.findUserByEmail(email);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            String token = UUID.randomUUID().toString();
+            user.setResetPasswordToken(token);
+            user.setResetPasswordRequested(true);
+            usersRepo.save(user);
+
+            String resetLink = "http://localhost:3000/resetPassword?token=" + token;
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("ktarichaima6@gmail.com");
+            message.setTo(email);
+            message.setSubject("Password Reset Request");
+            message.setText("To reset your password, click the link below:\n" + resetLink);
+            mailSender.send(message);
+        }
+        return ResponseEntity.ok("Password reset email sent.");
+    }
+    @Override
+    public ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response) {
+        boolean isValid = verifyResetPasswordTokenInternal(token);
+        if (isValid) {
+            Cookie cookie = new Cookie("resetPasswordToken", token);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(15 * 60); // 15 minutes
+            response.addCookie(cookie);
+            return ResponseEntity.ok("Token is valid.");
+        } else {
+            return ResponseEntity.badRequest().body("Invalid or expired token.");
+        }
+    }
+
+    public boolean verifyResetPasswordTokenInternal(String token) {
+        Optional<User> userOptional = usersRepo.findUserByResetPasswordToken(token);
+        return userOptional.isPresent() && userOptional.get().isResetPasswordRequested();
+    }
+    @Override
+    public ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.badRequest().body("No valid token found in cookies.");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.badRequest().body("Passwords do not match.");
+        }
+
+        Optional<User> userOptional = usersRepo.findUserByResetPasswordToken(token);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setPassword(passwordEncoder.encode(newPassword));
+            user.setResetPasswordToken(null);
+            user.setResetPasswordRequested(false);
+            usersRepo.save(user);
+
+
+            Cookie cookie = new Cookie("resetPasswordToken", null);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok("Password has been reset successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Invalid token or no password reset requested.");
+        }
+    }
 
 
 
