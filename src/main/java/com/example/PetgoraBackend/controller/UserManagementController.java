@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -71,5 +72,20 @@ public class UserManagementController {
     public ResponseEntity<UserDto> getUserProfile() {
         UserDto userProfile = usersManagementService.getUserProfile();
         return ResponseEntity.ok(userProfile);
+    }
+
+
+
+    @PutMapping("/approveUserByEmail")
+    public ResponseEntity<String> approveUserByEmail(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        usersManagementService.approveUserByEmail(email);
+        return ResponseEntity.ok("User approved successfully.");
+    }
+
+    @GetMapping("/unapprovedUsers")
+    public ResponseEntity<List<UserDto>> getUnapprovedUsers() {
+        List<UserDto> unapprovedUsers = usersManagementService.getUnapprovedUsers();
+        return ResponseEntity.ok(unapprovedUsers);
     }
 }

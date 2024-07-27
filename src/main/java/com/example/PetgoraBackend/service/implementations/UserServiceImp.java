@@ -69,11 +69,55 @@ public class UserServiceImp implements IUsersManagementService {
             newUser.setRole(userDto.role());
             newUser.setPhone(userDto.phone());
             newUser.setPassword(passwordEncoder.encode(userDto.password()));
-            sendConfirmationEmail(userDto);
+
+
+            if ("VETERINARIAN".equals(userDto.role())) {
+                newUser.setApproved(false);
+                sendApprovalRequestEmail(userDto);
+            } else {
+                newUser.setApproved(true);
+                sendConfirmationEmail(userDto);
+            }
+
             return UserMapper.INSTANCE.toUserDto(usersRepo.save(newUser));
         }
     }
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public void approveUserByEmail(String email) {
+        Optional<User> userOptional = usersRepo.findUserByEmail(email);
 
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setApproved(true);
+            usersRepo.save(user);
+            sendApprovalConfirmationEmail(user);
+        } else {
+            throw new EntityNotFoundException("User with email: " + email + " not found");
+        }
+    }
+
+
+    private void sendApprovalRequestEmail(UserDto userDto) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("ktarichaima6@gmail.com");
+        message.setSubject("Approval Request for Veterinarian Account");
+        message.setTo("ktarichaima266@gmail.com");
+        message.setText("A new veterinarian account has been created and requires approval:\n\n" +
+                "Name: " + userDto.name() + "\n" +
+                "Email: " + userDto.email() + "\n\n" +
+                "Please log in to the admin panel to approve or reject this account.");
+        mailSender.send(message);
+    }
+
+    private void sendApprovalConfirmationEmail(User user) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("ktarichaima6@gmail.com");
+        message.setSubject("Account Approval Confirmation");
+        message.setTo(user.getEmail());
+        message.setText("Dear " + user.getName() + ",\n\nYour veterinarian account has been approved.\n\nSincerely,\nPetaGora");
+        mailSender.send(message);
+    }
 
     private void sendConfirmationEmail(UserDto userDto) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -242,6 +286,8 @@ public class UserServiceImp implements IUsersManagementService {
         return UserMapper.INSTANCE.toUserDto(user);
     }
 
+
+@Override
     public void logout(HttpServletResponse response) {
         ResponseCookie cleanAccessTokenCookie = jwtUtils.getCleanAccessTokenCookie();
         ResponseCookie cleanRefreshTokenCookie = jwtUtils.getCleanRefreshTokenCookie();
@@ -249,4 +295,21 @@ public class UserServiceImp implements IUsersManagementService {
         response.addHeader(HttpHeaders.SET_COOKIE, cleanAccessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, cleanRefreshTokenCookie.toString());
     }
+
+
+
+    @Override
+    public List<UserDto> getUnapprovedUsers() {
+        List<User> unapprovedUsers = usersRepo.findByApprovedFalse();
+        return unapprovedUsers.stream()
+                .map(UserMapper.INSTANCE::toUserDto)
+                .collect(Collectors.toList());
+    }
+
+
+
+
+
+
+
 }
