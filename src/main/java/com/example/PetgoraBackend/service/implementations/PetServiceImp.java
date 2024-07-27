@@ -89,7 +89,7 @@ public class PetServiceImp implements IPetService {
 
     @Override
     public List<PetDto> getAllPetsByOwner(Integer Id) {
-        List<Pet> pets = petRepo.findByOwner(Id );
+        List<Pet> pets = petRepo.findByOwner_Id(Id);
         return pets.stream()
                 .map(PetMapper.INSTANCE::toPetDto)
                 .collect(Collectors.toList());
