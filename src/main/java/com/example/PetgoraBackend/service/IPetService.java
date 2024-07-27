@@ -1,26 +1,25 @@
-package com.example.PetgoraBackend.service.implementations;
+package com.example.PetgoraBackend.service;
 
 import com.example.PetgoraBackend.dto.PetDto;
+import com.example.PetgoraBackend.dto.PetResponseDto;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface IPetService {
 
-    ResponseEntity<String> deletePet(Long petId);
+    ResponseEntity<String> deletePet(Integer petId);
 
     PetDto addPet(PetDto petDto);
 
 
     PetDto updatePet(Integer petId, PetDto petDto);
 
-    ResponseEntity<String> deletePet(Integer petId);
-
-    List<PetDto> getAllPets();
+    List<PetResponseDto> getAllPets();
 
 
 
-    PetDto getPetById(Integer petId);
+    PetResponseDto getPetById(Integer petId);
 
 
 

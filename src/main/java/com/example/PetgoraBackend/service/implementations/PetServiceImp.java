@@ -1,18 +1,23 @@
 package com.example.PetgoraBackend.service.implementations;
 
+import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.UsersRepo; // Import UsersRepo for finding the owner
+import com.example.PetgoraBackend.service.IPetService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -27,18 +32,20 @@ public class PetServiceImp implements IPetService {
     }
 
     @Override
-    public ResponseEntity<String> deletePet(Long petId) {
-        return null;
+    public ResponseEntity<String> deletePet(Integer petId) {
+        petRepo.deleteById(petId);
+        System.out.println("Pet deleted successfully");
+        return ResponseEntity.ok("Pet deleted successfully");
     }
 
     @Override
     public PetDto addPet(PetDto petDto) {
         Pet pet = PetMapper.INSTANCE.toPet(petDto);
-
-        // Set the owner based on the provided email
-        User owner = usersRepo.findUserById(petDto.ownerId())
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User owner = usersRepo.findUserByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
-        pet.setOwner(owner); // Assuming you have an owner field in Pet
+        pet.setOwner(owner); // Set the owner
 
         return PetMapper.INSTANCE.toPetDto(petRepo.save(pet));
     }
@@ -57,28 +64,20 @@ public class PetServiceImp implements IPetService {
         return PetMapper.INSTANCE.toPetDto(petRepo.save(pet));
     }
 
-    @Override
-    public ResponseEntity<String> deletePet(Integer petId) {
-        if (!petRepo.existsById(petId)) {
-            throw new EntityNotFoundException("Pet not found");
-        }
-        petRepo.deleteById(petId);
-        return null;
-    }
 
     @Override
-    public List<PetDto> getAllPets() {
+    public List<PetResponseDto> getAllPets() {
         List<Pet> pets = petRepo.findAll();
         return pets.stream()
-                .map(PetMapper.INSTANCE::toPetDto)
+                .map(PetMapper.INSTANCE::toPetResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PetDto getPetById(Integer petId) {
+    public PetResponseDto getPetById(Integer petId) {
         Pet pet = petRepo.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
-        return PetMapper.INSTANCE.toPetDto(pet);
+        return PetMapper.INSTANCE.toPetResponseDto(pet);
     }
 
     @Override

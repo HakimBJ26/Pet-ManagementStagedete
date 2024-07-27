@@ -1,11 +1,9 @@
 package com.example.PetgoraBackend.dto;
 
-
-public record PetDto(
+public record PetResponseDto(
         String name,
         String breed,
-        Integer age
-
-
+        Integer age,
+        Integer ownerId
 ) {
 }

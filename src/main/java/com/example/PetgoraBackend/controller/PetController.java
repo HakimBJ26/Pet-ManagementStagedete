@@ -1,7 +1,8 @@
 package com.example.PetgoraBackend.controller;
 
 import com.example.PetgoraBackend.dto.PetDto;
-import com.example.PetgoraBackend.service.implementations.IPetService;
+import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.service.IPetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +19,13 @@ public class PetController {
     private final IPetService petService;
 
     @GetMapping
-    public List<PetDto> getAllPets() {
+    public List<PetResponseDto> getAllPets() {
         return petService.getAllPets();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PetDto> getPetById(@PathVariable Integer id) {
-        PetDto pet = petService.getPetById(id);
+    public ResponseEntity<PetResponseDto> getPetById(@PathVariable Integer id) {
+        PetResponseDto pet = petService.getPetById(id);
         if (pet != null) {
             return ResponseEntity.ok(pet);
         } else {
@@ -38,10 +39,12 @@ public class PetController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long id) {
-        petService.deletePet(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deletePet(@PathVariable Integer id) {
+        return petService.deletePet(id);
     }
 
-    // Add more endpoints as needed
+    @GetMapping("/owner/{ownerId}")
+    public List<PetDto> getPetsByOwner(@PathVariable Integer ownerId) {
+        return petService.getAllPetsByOwner(ownerId);
+    }
 }
