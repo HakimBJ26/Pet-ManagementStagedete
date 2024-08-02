@@ -40,6 +40,8 @@ public interface IUsersManagementService {
     ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response);
     ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response);
 
+    List<UserDto> searchVeterinariansByName(String name);
+
 }
 
 

@@ -104,5 +104,9 @@ public class UserManagementController {
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, @CookieValue(value = "resetPasswordToken", required = false) String token,  HttpServletResponse response) {
         return usersManagementService.resetPassword(requestBody.get("newPassword"), requestBody.get("confirmPassword"), token, response);
     }
+    @GetMapping("/search-veterinarians")
+    public List<UserDto> searchVeterinarians(@RequestParam String name) {
+        return usersManagementService.searchVeterinariansByName(name);
+    }
 
 }
