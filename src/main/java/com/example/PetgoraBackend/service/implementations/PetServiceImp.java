@@ -8,6 +8,9 @@ import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.UsersRepo; // Import UsersRepo for finding the owner
+import com.example.PetgoraBackend.repository.alerts.HealthAlertRepository;
+import com.example.PetgoraBackend.repository.petData.OverviewRepository;
+import com.example.PetgoraBackend.repository.petData.VitalSignsRepository;
 import com.example.PetgoraBackend.service.IPetService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -26,24 +29,28 @@ import java.util.stream.Stream;
 public class PetServiceImp implements IPetService {
 
     private final PetRepo petRepo;
+    private VitalSignsRepository vitalSignsRepository ;
+    private HealthAlertRepository healthAlertRepository ;
+    private OverviewRepository overviewRepository ;
     private final UsersRepo usersRepo; // Add UsersRepo to find the owner
 
-    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo) {
+    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository) {
         this.petRepo = petRepo;
         this.usersRepo = usersRepo;
+this.healthAlertRepository=healthAlertRepository ;
+this.vitalSignsRepository=vitalSignsRepository ;
+this.overviewRepository=overviewRepository;
     }
 
     @Override
     public ResponseEntity<String> deletePet(Integer petId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User owner = usersRepo.findUserByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
-        Pet pet = petRepo.findById(petId)
-                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
-        if (pet.getOwner().getId() != owner.getId()) {
-            throw new EntityNotFoundException("You are not the owner of this pet");
-        }
+        Pet pet = petRepo.findById(petId).orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+
+        // Delete related entities
+        vitalSignsRepository.deleteByPetId(petId);
+        healthAlertRepository.deleteByPetId(petId);
+        overviewRepository.deleteByPetId(petId);
+
         petRepo.deleteById(petId);
         System.out.println("Pet deleted successfully");
         return ResponseEntity.ok("Pet deleted successfully");

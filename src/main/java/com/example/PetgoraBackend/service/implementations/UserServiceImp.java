@@ -375,6 +375,32 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
+    @Override
+    public List<UserDto> searchVeterinariansByName(String name) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        Optional<User> currentUserOptional = usersRepo.findUserByEmail(userEmail);
+        if (currentUserOptional.isEmpty()) {
+            throw new EntityNotFoundException("Authenticated user not found");
+        }
+        User currentUser = currentUserOptional.get();
+        String userCity = currentUser.getCity();
+
+        List<User> veterinarians = usersRepo.findVeterinariansByName(name);
+        return veterinarians.stream()
+                .sorted((v1, v2) -> {
+                    boolean v1SameCity = v1.getCity().equalsIgnoreCase(userCity);
+                    boolean v2SameCity = v2.getCity().equalsIgnoreCase(userCity);
+                    if (v1SameCity && !v2SameCity) return -1;
+                    if (!v1SameCity && v2SameCity) return 1;
+                    return v1.getName().compareToIgnoreCase(v2.getName());
+                })
+                .map(UserMapper.INSTANCE::toUserDto)
+                .collect(Collectors.toList());
+    }
+
+
+
 
 
 }
