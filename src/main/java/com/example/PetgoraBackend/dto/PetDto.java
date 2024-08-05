@@ -6,6 +6,5 @@ public record PetDto(
         String breed,
         Integer age
 
-
 ) {
 }
