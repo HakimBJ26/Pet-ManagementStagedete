@@ -21,15 +21,24 @@ public class User implements UserDetails {
     @Column(unique = true, length = 100, nullable = false)
     private String email;
     private String name;
+
     private String password;
     private String city;
     private String role;
+    private String phone;
+    private boolean approved = false;
+
+    private boolean resetPasswordRequested;
+
+    private String resetPasswordToken;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
     }
+
+
 
     @Override
     public String getUsername() {
@@ -50,7 +59,12 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
     @Override
     public boolean isEnabled() {
         return true;

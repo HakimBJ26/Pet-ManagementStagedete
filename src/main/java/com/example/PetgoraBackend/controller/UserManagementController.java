@@ -3,16 +3,17 @@ package com.example.PetgoraBackend.controller;
 import com.example.PetgoraBackend.entity.UserDto;
 import com.example.PetgoraBackend.entity.UserLoginDto;
 import com.example.PetgoraBackend.service.IUsersManagementService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,15 +29,15 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.registerNewUser(userDto));
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody UserLoginDto userLoginDto, HttpServletResponse response) {
         return usersManagementService.UserLogin(userLoginDto, response);
     }
 
-    @PutMapping("updateProfile")
-    public UserDto updateUserProfile(@RequestBody UserDto userDto) {
-        return usersManagementService.updateUserProfile(userDto);
+    @PutMapping("/updateProfile")
+    public ResponseEntity<UserDto> updateUserProfile(@RequestBody UserDto userDto, HttpServletResponse response) {
+        UserDto updatedUserDto = usersManagementService.updateUserProfile(userDto, response);
+        return ResponseEntity.ok(updatedUserDto);
     }
 
     @PostMapping("/refreshToken")
@@ -45,10 +46,9 @@ public class UserManagementController {
     }
 
     @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<String> deleteUser(@PathVariable int userId) {
         return usersManagementService.deleteUserById(userId);
     }
-
 
     @GetMapping("/GetAllUsers")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -57,13 +57,12 @@ public class UserManagementController {
     }
 
     @PutMapping("/updateUserByAdmin/{userId}")
-    public ResponseEntity<String> updateUserByAdmin(@PathVariable Long userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<String> updateUserByAdmin(@PathVariable int userId, @RequestBody UserDto userDto) { // Changed Long to int
         return usersManagementService.updateUserByAdmin(userId, userDto);
     }
 
-
     @GetMapping("/getUserById/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable int userId) {
         return ResponseEntity.ok(usersManagementService.getUserById(userId));
     }
 
@@ -73,10 +72,43 @@ public class UserManagementController {
         return ResponseEntity.ok("Logged out successfully.");
     }
 
-
     @GetMapping("/profile")
     public ResponseEntity<UserDto> getUserProfile() {
         UserDto userProfile = usersManagementService.getUserProfile();
         return ResponseEntity.ok(userProfile);
+    }
+
+
+    @PutMapping("/approveUserByEmail")
+    public ResponseEntity<String> approveUserByEmail(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        usersManagementService.approveUserByEmail(email);
+        return ResponseEntity.ok("User approved successfully.");
+    }
+
+
+
+    @GetMapping("/unapprovedUsers")
+    public ResponseEntity<List<UserDto>> getUnapprovedUsers() {
+        List<UserDto> unapprovedUsers = usersManagementService.getUnapprovedUsers();
+        return ResponseEntity.ok(unapprovedUsers);
+    }
+
+
+
+
+    @PostMapping("/sendResetPasswordEmail")
+    public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> requestBody) {
+        return usersManagementService.sendResetPasswordEmail(requestBody.get("email"));
+    }
+
+    @PostMapping("/verifyResetPasswordToken")
+    public ResponseEntity<String> verifyResetPasswordToken(@RequestBody Map<String, String> requestBody, HttpServletResponse response) {
+        return usersManagementService.verifyResetPasswordToken(requestBody.get("token"), response);
+    }
+
+    @PutMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, @CookieValue(value = "resetPasswordToken", required = false) String token) {
+        return usersManagementService.resetPassword(requestBody.get("newPassword"), requestBody.get("confirmPassword"), token);
     }
 }

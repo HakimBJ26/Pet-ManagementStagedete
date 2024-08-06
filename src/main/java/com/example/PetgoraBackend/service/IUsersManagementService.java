@@ -4,10 +4,11 @@ import com.example.PetgoraBackend.entity.UserDto;
 import com.example.PetgoraBackend.entity.UserLoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IUsersManagementService {
 
@@ -15,16 +16,31 @@ public interface IUsersManagementService {
 
     ResponseEntity<UserDto> UserLogin(UserLoginDto userLoginDto, HttpServletResponse response);
 
-    UserDto updateUserProfile(UserDto UserDto);
+    UserDto updateUserProfile(UserDto userDto, HttpServletResponse response);
+
     ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response);
 
-    ResponseEntity<String>deleteUserById(Long userId);
+    ResponseEntity<String> deleteUserById(int userId);
 
-     ResponseEntity<String> updateUserByAdmin(Long userId, UserDto userDto);
+    ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto);
 
     List<UserDto> getAllUsers();
 
-    UserDto getUserById(Long userId);
-     void logout(HttpServletResponse response);
-    public UserDto getUserProfile();
+    UserDto getUserById(int userId);
+
+    void logout(HttpServletResponse response);
+
+    UserDto getUserProfile();
+
+
+     void approveUserByEmail(String email);
+
+
+     List<UserDto> getUnapprovedUsers();
+     ResponseEntity<String> sendResetPasswordEmail(String email);
+
+     ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response);
+     ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token);
 }
+
+
