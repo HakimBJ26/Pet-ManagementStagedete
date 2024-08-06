@@ -14,8 +14,13 @@ public class Pet {
     private String breed;
     private Integer age;
 
+    // blob image
+    @Lob
+    @Column(name = "image", columnDefinition = "LONGBLOB")
+    private byte[] image;
+
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id") // Foreign key referencing User
     private User owner;
 
     // Getters and setters
@@ -59,5 +64,11 @@ public class Pet {
         this.owner = owner;
     }
 
+    public byte[] getImage() {
+        return image;
+    }
 
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
 }

@@ -1,14 +1,10 @@
 package com.example.PetgoraBackend.controller;
 
-import com.example.PetgoraBackend.entity.UserDto;
-import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.dto.UserDto;
+import com.example.PetgoraBackend.dto.UserLoginDto;
 import com.example.PetgoraBackend.service.IUsersManagementService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,6 +75,7 @@ public class UserManagementController {
     }
 
 
+
     @PutMapping("/approveUserByEmail")
     public ResponseEntity<String> approveUserByEmail(@RequestBody Map<String, String> requestBody) {
         String email = requestBody.get("email");
@@ -86,15 +83,11 @@ public class UserManagementController {
         return ResponseEntity.ok("User approved successfully.");
     }
 
-
-
     @GetMapping("/unapprovedUsers")
     public ResponseEntity<List<UserDto>> getUnapprovedUsers() {
         List<UserDto> unapprovedUsers = usersManagementService.getUnapprovedUsers();
         return ResponseEntity.ok(unapprovedUsers);
     }
-
-
 
 
     @PostMapping("/sendResetPasswordEmail")
@@ -108,7 +101,12 @@ public class UserManagementController {
     }
 
     @PutMapping("/resetPassword")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, @CookieValue(value = "resetPasswordToken", required = false) String token) {
-        return usersManagementService.resetPassword(requestBody.get("newPassword"), requestBody.get("confirmPassword"), token);
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, @CookieValue(value = "resetPasswordToken", required = false) String token,  HttpServletResponse response) {
+        return usersManagementService.resetPassword(requestBody.get("newPassword"), requestBody.get("confirmPassword"), token, response);
     }
+    @GetMapping("/search-veterinarians")
+    public List<UserDto> searchVeterinarians(@RequestParam String name) {
+        return usersManagementService.searchVeterinariansByName(name);
+    }
+
 }

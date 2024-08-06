@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.service.implementations;
 import com.example.PetgoraBackend.entity.User;
-import com.example.PetgoraBackend.entity.UserDto;
-import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.dto.UserDto;
+import com.example.PetgoraBackend.dto.UserLoginDto;
 import com.example.PetgoraBackend.mapper.UserMapper;
 import com.example.PetgoraBackend.repository.UsersRepo;
 import com.example.PetgoraBackend.service.IUsersManagementService;
@@ -79,7 +79,6 @@ public class UserServiceImp implements IUsersManagementService {
             return UserMapper.INSTANCE.toUserDto(usersRepo.save(newUser));
         }
     }
-
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public void approveUserByEmail(String email) {
@@ -94,6 +93,7 @@ public class UserServiceImp implements IUsersManagementService {
             throw new EntityNotFoundException("User with email: " + email + " not found");
         }
     }
+
 
     private void sendApprovalRequestEmail(UserDto userDto) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -130,10 +130,6 @@ public class UserServiceImp implements IUsersManagementService {
         try {
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
-
-            if (!user.isApproved()) {
-                throw new IllegalArgumentException("Your account is not approved yet.");
-            }
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userLoginDto.email(), userLoginDto.password());
@@ -179,8 +175,10 @@ public class UserServiceImp implements IUsersManagementService {
             currentUser.setPhone(userDto.phone());
             User updatedUser = usersRepo.save(currentUser);
 
+            // Generate new JWT token
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(updatedUser.getEmail(), "", new ArrayList<>());
 
+            // Set the new access and refresh tokens in the HttpOnly cookies
             ResponseCookie accessTokenCookie = jwtUtils.generateAccessTokenCookie(userDetails);
             ResponseCookie refreshTokenCookie = jwtUtils.generateRefreshTokenCookie(userDetails);
 
@@ -195,7 +193,7 @@ public class UserServiceImp implements IUsersManagementService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto) {
+    public ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto) { // Changed Long to int
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
 
@@ -232,7 +230,7 @@ public class UserServiceImp implements IUsersManagementService {
                         String username = jwtUtils.extractUsername(refreshToken);
                         UserDetails userDetails = usersRepo.findUserByEmail(username).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-
+                        // Generate new access token
                         ResponseCookie newAccessTokenCookie = jwtUtils.generateAccessTokenCookie(userDetails);
                         response.addHeader(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString());
 
@@ -286,6 +284,7 @@ public class UserServiceImp implements IUsersManagementService {
     }
 
 
+    @Override
     public void logout(HttpServletResponse response) {
         ResponseCookie cleanAccessTokenCookie = jwtUtils.getCleanAccessTokenCookie();
         ResponseCookie cleanRefreshTokenCookie = jwtUtils.getCleanRefreshTokenCookie();
@@ -295,6 +294,8 @@ public class UserServiceImp implements IUsersManagementService {
     }
 
 
+
+    @Override
     public List<UserDto> getUnapprovedUsers() {
         List<User> unapprovedUsers = usersRepo.findByApprovedFalse();
         return unapprovedUsers.stream()
@@ -302,14 +303,17 @@ public class UserServiceImp implements IUsersManagementService {
                 .collect(Collectors.toList());
     }
 
-@Override
+
+
+
+    @Override
     public ResponseEntity<String> sendResetPasswordEmail(String email) {
         Optional<User> userOptional = usersRepo.findUserByEmail(email);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             String token = UUID.randomUUID().toString();
             user.setResetPasswordToken(token);
-            user.setResetPasswordRequested(true); // Mark that a password reset was requested
+            user.setResetPasswordRequested(true);
             usersRepo.save(user);
 
             String resetLink = "http://localhost:3000/resetPassword?token=" + token;
@@ -341,9 +345,8 @@ public class UserServiceImp implements IUsersManagementService {
         Optional<User> userOptional = usersRepo.findUserByResetPasswordToken(token);
         return userOptional.isPresent() && userOptional.get().isResetPasswordRequested();
     }
-
-@Override
-    public ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token) {
+    @Override
+    public ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.badRequest().body("No valid token found in cookies.");
         }
@@ -358,10 +361,42 @@ public class UserServiceImp implements IUsersManagementService {
             user.setResetPasswordToken(null);
             user.setResetPasswordRequested(false);
             usersRepo.save(user);
+
+
+            Cookie cookie = new Cookie("resetPasswordToken", null);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+
             return ResponseEntity.ok("Password has been reset successfully.");
         } else {
             return ResponseEntity.badRequest().body("Invalid token or no password reset requested.");
         }
+    }
+
+    @Override
+    public List<UserDto> searchVeterinariansByName(String name) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        Optional<User> currentUserOptional = usersRepo.findUserByEmail(userEmail);
+        if (currentUserOptional.isEmpty()) {
+            throw new EntityNotFoundException("Authenticated user not found");
+        }
+        User currentUser = currentUserOptional.get();
+        String userCity = currentUser.getCity();
+
+        List<User> veterinarians = usersRepo.findVeterinariansByName(name);
+        return veterinarians.stream()
+                .sorted((v1, v2) -> {
+                    boolean v1SameCity = v1.getCity().equalsIgnoreCase(userCity);
+                    boolean v2SameCity = v2.getCity().equalsIgnoreCase(userCity);
+                    if (v1SameCity && !v2SameCity) return -1;
+                    if (!v1SameCity && v2SameCity) return 1;
+                    return v1.getName().compareToIgnoreCase(v2.getName());
+                })
+                .map(UserMapper.INSTANCE::toUserDto)
+                .collect(Collectors.toList());
     }
 
 

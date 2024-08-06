@@ -21,4 +21,3 @@ public class ResetPassword {
         this.newPassword = newPassword;
     }
 }
-

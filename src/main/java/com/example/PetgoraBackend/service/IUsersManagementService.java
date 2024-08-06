@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.service;
 
-import com.example.PetgoraBackend.entity.UserDto;
-import com.example.PetgoraBackend.entity.UserLoginDto;
+import com.example.PetgoraBackend.dto.UserDto;
+import com.example.PetgoraBackend.dto.UserLoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +33,17 @@ public interface IUsersManagementService {
     UserDto getUserProfile();
 
 
-     void approveUserByEmail(String email);
+    void approveUserByEmail(String email);
+     List<UserDto> getUnapprovedUsers() ;
 
 
-     List<UserDto> getUnapprovedUsers();
-     ResponseEntity<String> sendResetPasswordEmail(String email);
+    ResponseEntity<String> sendResetPasswordEmail(String email);
 
-     ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response);
-     ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token);
+    ResponseEntity<String> verifyResetPasswordToken(String token, HttpServletResponse response);
+    ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response);
+
+    List<UserDto> searchVeterinariansByName(String name);
+
 }
 
 

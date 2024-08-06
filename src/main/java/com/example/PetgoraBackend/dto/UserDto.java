@@ -1,4 +1,4 @@
-package com.example.PetgoraBackend.entity;
+package com.example.PetgoraBackend.dto;
 
 public record UserDto(
         Integer id,

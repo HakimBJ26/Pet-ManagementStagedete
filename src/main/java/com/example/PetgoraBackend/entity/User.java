@@ -24,10 +24,11 @@ public class User implements UserDetails {
 
     private String password;
     private String city;
+
+
     private String role;
     private String phone;
     private boolean approved = false;
-
     private boolean resetPasswordRequested;
 
     private String resetPasswordToken;
