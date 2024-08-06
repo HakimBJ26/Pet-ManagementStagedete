@@ -4,7 +4,6 @@ public record PetResponseDto(
         String name,
         String breed,
         Integer age,
-
         Integer ownerId
 ) {
 }

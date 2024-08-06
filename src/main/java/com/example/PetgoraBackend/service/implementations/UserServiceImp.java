@@ -284,7 +284,7 @@ public class UserServiceImp implements IUsersManagementService {
     }
 
 
-@Override
+    @Override
     public void logout(HttpServletResponse response) {
         ResponseCookie cleanAccessTokenCookie = jwtUtils.getCleanAccessTokenCookie();
         ResponseCookie cleanRefreshTokenCookie = jwtUtils.getCleanRefreshTokenCookie();
