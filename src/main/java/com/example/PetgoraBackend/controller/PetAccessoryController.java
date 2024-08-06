@@ -1,6 +1,7 @@
 package com.example.PetgoraBackend.controller;
 
 import com.example.PetgoraBackend.dto.PetAccessoryDto;
+import com.example.PetgoraBackend.entity.PetAccessory;
 import com.example.PetgoraBackend.service.IPetAccessoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,5 +58,9 @@ public class PetAccessoryController {
     @DeleteMapping("/{id}")
     public void deleteAccessory(@PathVariable Long id) {
         service.deleteById(id);
+    }
+    @GetMapping("/search")
+    public List<PetAccessory> findByName(@RequestParam String name) {
+        return service.findByName(name);
     }
 }

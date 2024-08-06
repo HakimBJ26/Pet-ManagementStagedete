@@ -3,6 +3,7 @@ package com.example.PetgoraBackend.service.implementations;
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
+import com.example.PetgoraBackend.entity.PetAccessory;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
@@ -93,4 +94,5 @@ public class PetServiceImp implements IPetService {
                 .map(PetMapper.INSTANCE::toPetDto)
                 .collect(Collectors.toList());
     }
+
 }

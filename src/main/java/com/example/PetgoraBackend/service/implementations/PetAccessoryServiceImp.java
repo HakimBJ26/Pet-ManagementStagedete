@@ -58,4 +58,8 @@ public class PetAccessoryServiceImp implements IPetAccessoryService {
         petAccessory.setImageUrl(petAccessoryDto.imageUrl());
         return petAccessory;
     }
+    @Override
+    public List<PetAccessory> findByName(String name) {
+        return repository.findByNameContainingIgnoreCase(name);
+    }
 }
