@@ -74,8 +74,6 @@ public class UserManagementController {
         return ResponseEntity.ok(userProfile);
     }
 
-
-
     @PutMapping("/approveUserByEmail")
     public ResponseEntity<String> approveUserByEmail(@RequestBody Map<String, String> requestBody) {
         String email = requestBody.get("email");

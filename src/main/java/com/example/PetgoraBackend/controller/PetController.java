@@ -1,6 +1,5 @@
 package com.example.PetgoraBackend.controller;
 
-import com.example.PetgoraBackend.dto.CurrentUserPetResponseDto;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.entity.Pet;
@@ -64,17 +63,14 @@ public class PetController {
 
     @PostMapping("/{id}/image")
     public Pet uploadPetImage(@PathVariable Integer id, @RequestParam("photo") MultipartFile file) {
-        // You can use the file object to get the file content and process it
-        try {
-            // Handle the file (e.g., save it to disk or process it)
+         try {
             byte[] imageBytes = file.getBytes();
-            // Call your service to handle the image
             return petService.uploadPetImage(id, imageBytes);
         } catch (IOException e) {
             e.printStackTrace();
-            // Handle error
             throw new RuntimeException("Failed to upload image");
         }
     }
+
 }
 
