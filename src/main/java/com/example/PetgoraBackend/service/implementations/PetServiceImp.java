@@ -36,7 +36,6 @@ public class PetServiceImp implements IPetService {
     private OverviewRepository overviewRepository ;
     private final UsersRepo usersRepo;
 
-    private final SafeZoneRepository safeZoneRepository;
 
     public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,
                          HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository,
@@ -46,7 +45,8 @@ public class PetServiceImp implements IPetService {
         this.healthAlertRepository=healthAlertRepository ;
         this.vitalSignsRepository=vitalSignsRepository ;
         this.overviewRepository=overviewRepository;
-        this.safeZoneRepository=safeZoneRepository;
+
+
     }
 
     @Override
