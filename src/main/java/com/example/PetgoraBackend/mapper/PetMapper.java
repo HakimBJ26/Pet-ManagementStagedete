@@ -1,5 +1,6 @@
 package com.example.PetgoraBackend.mapper;
 
+import com.example.PetgoraBackend.dto.CurrentUserPetResponseDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
@@ -14,4 +15,6 @@ public interface PetMapper {
     PetResponseDto toPetResponseDto(Pet pet);
     PetDto toPetDto(Pet pet);
     Pet toPet(PetDto petDto);
+
+    CurrentUserPetResponseDto toCurrentUserPetResponseDto(Pet pet);
 }

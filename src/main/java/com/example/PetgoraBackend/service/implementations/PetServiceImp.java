@@ -1,18 +1,23 @@
 package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
+import com.example.PetgoraBackend.entity.Position;
+import com.example.PetgoraBackend.entity.SafeZone;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.UsersRepo; // Import UsersRepo for finding the owner
 import com.example.PetgoraBackend.repository.alerts.HealthAlertRepository;
 import com.example.PetgoraBackend.repository.petData.OverviewRepository;
+import com.example.PetgoraBackend.repository.petData.SafeZoneRepository;
 import com.example.PetgoraBackend.repository.petData.VitalSignsRepository;
 import com.example.PetgoraBackend.service.IPetService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -30,21 +34,25 @@ public class PetServiceImp implements IPetService {
     private VitalSignsRepository vitalSignsRepository ;
     private HealthAlertRepository healthAlertRepository ;
     private OverviewRepository overviewRepository ;
-    private final UsersRepo usersRepo; // Add UsersRepo to find the owner
+    private final UsersRepo usersRepo;
 
-    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository) {
+
+    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,
+                         HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository,
+                         SafeZoneRepository safeZoneRepository) {
         this.petRepo = petRepo;
         this.usersRepo = usersRepo;
-this.healthAlertRepository=healthAlertRepository ;
-this.vitalSignsRepository=vitalSignsRepository ;
-this.overviewRepository=overviewRepository;
+        this.healthAlertRepository=healthAlertRepository ;
+        this.vitalSignsRepository=vitalSignsRepository ;
+        this.overviewRepository=overviewRepository;
+
+
     }
 
     @Override
     public ResponseEntity<String> deletePet(Integer petId) {
         Pet pet = petRepo.findById(petId).orElseThrow(() -> new EntityNotFoundException("Pet not found"));
 
-        // Delete related entities
         vitalSignsRepository.deleteByPetId(petId);
         healthAlertRepository.deleteByPetId(petId);
         overviewRepository.deleteByPetId(petId);
@@ -70,8 +78,16 @@ this.overviewRepository=overviewRepository;
 
     @Override
     public PetDto updatePet(Integer petId, PetDto petDto) {
+        // check if it's the owner
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User owner = usersRepo.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
         Pet pet = petRepo.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+        if (pet.getOwner().getId() != owner.getId()) {
+            throw new EntityNotFoundException("You are not the owner of this pet");
+        }
 
         pet.setName(petDto.name());
         pet.setBreed(petDto.breed());
@@ -82,6 +98,7 @@ this.overviewRepository=overviewRepository;
 
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public List<PetResponseDto> getAllPets() {
         List<Pet> pets = petRepo.findAll();
         return pets.stream()
@@ -91,22 +108,55 @@ this.overviewRepository=overviewRepository;
 
     @Override
     public PetResponseDto getPetById(Integer petId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User owner = usersRepo.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
         Pet pet = petRepo.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+        if (pet.getOwner().getId() != owner.getId()) {
+            throw new EntityNotFoundException("You are not the owner of this pet");
+        }
+
         return PetMapper.INSTANCE.toPetResponseDto(pet);
     }
 
     @Override
-    public List<PetDto> getPetsByOwnerEmail(String ownerEmail) {
-        return null;
-    }
-
-
-    @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public List<PetDto> getAllPetsByOwner(Integer Id) {
         List<Pet> pets = petRepo.findByOwner_Id(Id);
         return pets.stream()
                 .map(PetMapper.INSTANCE::toPetDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Pet> getCurrentUserPets() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User owner = usersRepo.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
+        List<Pet> pets = petRepo.findByOwner_Id(owner.getId());
+        return pets;
+    }
+
+    @Override
+    public Pet uploadPetImage(Integer petId, byte[] image) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User owner = usersRepo.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
+        Pet pet = petRepo.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+        if (pet.getOwner().getId() != owner.getId()) {
+            throw new EntityNotFoundException("You are not the owner of this pet");
+        }
+
+        pet.setImage(image);
+        return petRepo.save(pet);
+    }
+
+
 }
+

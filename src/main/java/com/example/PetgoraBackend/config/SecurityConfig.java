@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 public class SecurityConfig {
 
@@ -35,12 +36,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/public/**", "/api/auth/register", "/api/auth/**",
-                                "/configuration/ui", "/configuration/security",
-                                "/swagger-ui/**", "/swagger-resources/**", "/webjars/**",
-                                "/api-docs/**", "/swagger-ui.html")
-                        .permitAll()
+                .authorizeHttpRequests(request-> request.requestMatchers("/public/**","/api/auth/register","/api/auth/**",
+                        "/configuration/ui",
+                        "/configuration/security",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/api-docs/**",
+                        "/swagger-ui.html", "/api/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

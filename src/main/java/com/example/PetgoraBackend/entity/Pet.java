@@ -2,10 +2,12 @@ package com.example.PetgoraBackend.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "pet")
 public class Pet {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -14,11 +16,25 @@ public class Pet {
     private String breed;
     private Integer age;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pet_id")
+    private List<SafeZone> safeZones = new ArrayList<>();
+
+
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pet_id")
+    private List<DangerZone> dangerZones = new ArrayList<>();
+
+    @Lob
+    @Column(name = "image", columnDefinition = "LONGBLOB")
+    private byte[] image;
+
     @ManyToOne
-    @JoinColumn(name = "owner_id") // Foreign key referencing User
+    @JoinColumn(name = "owner_id")
     private User owner;
 
-    // Getters and setters
+
     public Integer getId() {
         return id;
     }
@@ -57,5 +73,28 @@ public class Pet {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
+    public List<SafeZone> getSafeZones() {
+        return safeZones;
+    }
+
+    public void setSafeZones(List<SafeZone> safeZones) {
+        this.safeZones = safeZones;
+    }
+    public List<DangerZone> getDangerZones() {
+        return dangerZones;
+    }
+
+    public void setDangerZones(List<DangerZone> dangerZones) {
+        this.dangerZones = dangerZones;
     }
 }
