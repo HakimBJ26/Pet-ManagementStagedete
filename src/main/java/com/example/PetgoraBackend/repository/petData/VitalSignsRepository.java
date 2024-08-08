@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VitalSignsRepository extends JpaRepository<VitalSigns, Integer> {
     void deleteByPetId(Integer petId);
+    VitalSigns findByPetId(Integer petId);
+
 }

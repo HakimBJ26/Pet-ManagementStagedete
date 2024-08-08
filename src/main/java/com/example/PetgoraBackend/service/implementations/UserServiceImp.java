@@ -131,13 +131,16 @@ public class UserServiceImp implements IUsersManagementService {
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
+            if (!user.isApproved()) {
+                throw new IllegalArgumentException("User is not approved");
+            }
+
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userLoginDto.email(), userLoginDto.password());
             authenticationManager.authenticate(authenticationToken);
 
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     user.getEmail(), user.getPassword(), Collections.emptyList());
-
 
             ResponseCookie accessTokenCookie = jwtUtils.generateAccessTokenCookie(userDetails);
             ResponseCookie refreshTokenCookie = jwtUtils.generateRefreshTokenCookie(userDetails);
@@ -160,6 +163,7 @@ public class UserServiceImp implements IUsersManagementService {
             throw new IllegalArgumentException("Incorrect email or password", e);
         }
     }
+
 
     @Override
     public UserDto updateUserProfile(UserDto userDto, HttpServletResponse response) {
