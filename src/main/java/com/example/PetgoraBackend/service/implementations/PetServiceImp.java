@@ -1,15 +1,18 @@
 package com.example.PetgoraBackend.service.implementations;
 
-import com.example.PetgoraBackend.dto.CurrentUserPetResponseDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
+import com.example.PetgoraBackend.entity.Position;
+import com.example.PetgoraBackend.entity.SafeZone;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.UsersRepo; // Import UsersRepo for finding the owner
 import com.example.PetgoraBackend.repository.alerts.HealthAlertRepository;
 import com.example.PetgoraBackend.repository.petData.OverviewRepository;
+import com.example.PetgoraBackend.repository.petData.SafeZoneRepository;
 import com.example.PetgoraBackend.repository.petData.VitalSignsRepository;
 import com.example.PetgoraBackend.service.IPetService;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -32,21 +34,25 @@ public class PetServiceImp implements IPetService {
     private VitalSignsRepository vitalSignsRepository ;
     private HealthAlertRepository healthAlertRepository ;
     private OverviewRepository overviewRepository ;
-    private final UsersRepo usersRepo; // Add UsersRepo to find the owner
+    private final UsersRepo usersRepo;
 
-    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository) {
+
+    public PetServiceImp(PetRepo petRepo, UsersRepo usersRepo,VitalSignsRepository vitalSignsRepository,
+                         HealthAlertRepository healthAlertRepository,OverviewRepository overviewRepository,
+                         SafeZoneRepository safeZoneRepository) {
         this.petRepo = petRepo;
         this.usersRepo = usersRepo;
         this.healthAlertRepository=healthAlertRepository ;
         this.vitalSignsRepository=vitalSignsRepository ;
         this.overviewRepository=overviewRepository;
+
+
     }
 
     @Override
     public ResponseEntity<String> deletePet(Integer petId) {
         Pet pet = petRepo.findById(petId).orElseThrow(() -> new EntityNotFoundException("Pet not found"));
 
-        // Delete related entities
         vitalSignsRepository.deleteByPetId(petId);
         healthAlertRepository.deleteByPetId(petId);
         overviewRepository.deleteByPetId(petId);
@@ -150,6 +156,7 @@ public class PetServiceImp implements IPetService {
         pet.setImage(image);
         return petRepo.save(pet);
     }
+
 
 }
 
