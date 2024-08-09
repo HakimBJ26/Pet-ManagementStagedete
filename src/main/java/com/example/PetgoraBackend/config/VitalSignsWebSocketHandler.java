@@ -14,7 +14,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,7 +65,8 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
 
             // Extract vital signs data
             JsonNode vitalSignsNode = jsonNode.get("vitalSigns");
-            Pet pet = petRepository.findById(vitalSignsNode.get("petId").asInt()).orElse(null);
+            Integer petId = vitalSignsNode.get("petId").asInt();
+            Pet pet = petRepository.findById(petId).orElse(null);
 
             if (pet != null) {
                 User owner = pet.getOwner();
@@ -81,9 +81,17 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 vitalSigns.setLastUpdated(OffsetDateTime.parse(vitalSignsNode.get("lastUpdated").asText()).toLocalDateTime());
                 vitalSignsService.saveOrUpdateVitalSigns(vitalSigns);
 
+                // Prepare the simplified response
+                Map<String, Object> response = new HashMap<>();
+                response.put("petId", petId);
+                response.put("heartRate", vitalSignsNode.get("heartRate").asText());
+                response.put("temperature", vitalSignsNode.get("temperature").asText());
+                response.put("activityLevel", vitalSignsNode.get("activityLevel").asText());
+                response.put("lastUpdated", vitalSignsNode.get("lastUpdated").asText());
+
                 // Send vital signs data via WebSocket
                 if (session != null && session.isOpen()) {
-                    session.sendMessage(new TextMessage(mapper.writeValueAsString(vitalSigns)));
+                    session.sendMessage(new TextMessage(mapper.writeValueAsString(response)));
                 }
             }
 
@@ -91,4 +99,5 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
             e.printStackTrace();
         }
     }
+
 }
