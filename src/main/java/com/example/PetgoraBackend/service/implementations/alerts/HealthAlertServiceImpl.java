@@ -46,7 +46,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     public void deleteHealthAlertById(Integer id) {
         HealthAlert healthAlert = healthAlertRepository.findById(id)
                 .orElseThrow(() -> new RessourceNotFoundException("HealthAlert not found"));
-        healthAlertRepository.delete(healthAlert);
+        healthAlertRepository.deleteById(healthAlert.getId());
     }
 
     @Override

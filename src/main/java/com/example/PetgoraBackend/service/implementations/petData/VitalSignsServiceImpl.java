@@ -9,6 +9,7 @@ import com.example.PetgoraBackend.mapper.petData.VitalSignsMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.petData.VitalSignsRepository;
 import com.example.PetgoraBackend.service.petData.VitalSignsService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,5 +63,26 @@ public class VitalSignsServiceImpl implements VitalSignsService {
         }
         vitalSignsRepository.deleteById(id);
     }
+    @Override
+    public void saveOrUpdateVitalSigns(VitalSigns vitalSigns) {
+        Pet pet = petRepository.findById(vitalSigns.getPet().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+
+        // Attach the managed Pet entity to VitalSigns
+        vitalSigns.setPet(pet);
+
+        VitalSigns existingVitalSigns = vitalSignsRepository.findByPetId(pet.getId());
+        if (existingVitalSigns != null) {
+            existingVitalSigns.setHeartRate(vitalSigns.getHeartRate());
+            existingVitalSigns.setTemperature(vitalSigns.getTemperature());
+            existingVitalSigns.setActivityLevel(vitalSigns.getActivityLevel());
+            existingVitalSigns.setLastUpdated(vitalSigns.getLastUpdated());
+            vitalSignsRepository.save(existingVitalSigns);
+        } else {
+            vitalSignsRepository.save(vitalSigns);
+        }
+    }
+
+
 }
 
