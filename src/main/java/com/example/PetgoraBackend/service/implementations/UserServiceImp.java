@@ -164,6 +164,7 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
+
     @Override
     public UserDto updateUserProfile(UserDto userDto, HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

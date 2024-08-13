@@ -15,7 +15,7 @@ public class HealthAlert {
     private String severity;
     private String action;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "pet_id", referencedColumnName = "id")
     private Pet pet;
 
