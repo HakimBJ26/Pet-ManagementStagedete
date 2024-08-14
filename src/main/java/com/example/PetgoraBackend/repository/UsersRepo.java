@@ -24,5 +24,12 @@ public interface  UsersRepo extends JpaRepository<User, Integer> {
         @Query("SELECT u FROM User u WHERE u.role = 'VETERINARIAN' AND LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
         List<User> findVeterinariansByName(String name);
 
+
+        Optional<User> findByName(String name);
+
+
+
+
+
 }
 

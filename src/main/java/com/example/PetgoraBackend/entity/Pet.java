@@ -43,9 +43,8 @@ public class Pet {
     private byte[] image;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-
 
     public Integer getId() {
         return id;
