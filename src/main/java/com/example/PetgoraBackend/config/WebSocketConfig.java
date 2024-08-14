@@ -21,4 +21,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
         registry.addHandler(locationWebSocketHandler, "/ws/location").setAllowedOrigins("*");
         registry.addHandler(vitalSignsWebSocketHandler, "/ws/vital_signs").setAllowedOrigins("*");
     }
+
+
 }

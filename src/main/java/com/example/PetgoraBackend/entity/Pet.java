@@ -1,5 +1,6 @@
 package com.example.PetgoraBackend.entity;
 
+import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -13,9 +14,20 @@ public class Pet {
     private Integer id;
 
     private String name;
+
+    public void setPetGoal(PetGoal petGoal) {
+        this.petGoal = petGoal;
+    }
+
+    public PetGoal getPetGoal() {
+        return petGoal;
+    }
+
     private String breed;
     private Integer age;
 
+    @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PetGoal petGoal;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pet_id")
     private List<SafeZone> safeZones = new ArrayList<>();
