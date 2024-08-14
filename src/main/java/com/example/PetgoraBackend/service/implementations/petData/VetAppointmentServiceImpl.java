@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -88,5 +89,33 @@ public class VetAppointmentServiceImpl implements VetAppointmentService {
         if (!userDetails.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_VETERINARIAN"))) {
             throw new RuntimeException("Only veterinarians can create vet appointments");
         }
+    }
+
+
+    @Override
+    public void deleteVetAppointment(Integer id) {
+        if (!vetAppointmentRepository.existsById(id)) {
+            throw new NoSuchElementException("Vet appointment not found");
+        }
+        vetAppointmentRepository.deleteById(id);
+    }
+
+    @Override
+    public VetAppointmentDTO updateVetAppointment(Integer id, VetAppointmentDTO vetAppointmentDTO) {
+        VetAppointment existingAppointment = vetAppointmentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Vet appointment not found"));
+
+        // Map updated fields from DTO to entity
+        existingAppointment.setWeight(vetAppointmentDTO.getWeight());
+        existingAppointment.setBody(vetAppointmentDTO.getBody());
+        existingAppointment.setTail(vetAppointmentDTO.getTail());
+        existingAppointment.setChest(vetAppointmentDTO.getChest());
+        existingAppointment.setAppointmentDate(vetAppointmentDTO.getAppointmentDate());
+
+        // Save the updated appointment
+        VetAppointment updatedAppointment = vetAppointmentRepository.save(existingAppointment);
+
+        // Return the updated DTO
+        return vetAppointmentMapper.toDto(updatedAppointment);
     }
 }

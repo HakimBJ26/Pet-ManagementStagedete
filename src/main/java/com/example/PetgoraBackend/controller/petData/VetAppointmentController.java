@@ -29,4 +29,18 @@ public class VetAppointmentController {
         VetAppointmentComparisonDTO comparisonDTO = vetAppointmentService.getLastTwoVetAppointments(petId);
         return ResponseEntity.ok(comparisonDTO);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('VETERINARIAN')")
+    public ResponseEntity<Void> deleteVetAppointment(@PathVariable Integer id) {
+        vetAppointmentService.deleteVetAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('VETERINARIAN')")
+    public ResponseEntity<VetAppointmentDTO> updateVetAppointment(@PathVariable Integer id, @RequestBody VetAppointmentDTO vetAppointmentDTO) {
+        VetAppointmentDTO updatedAppointment = vetAppointmentService.updateVetAppointment(id, vetAppointmentDTO);
+        return ResponseEntity.ok(updatedAppointment);
+    }
 }

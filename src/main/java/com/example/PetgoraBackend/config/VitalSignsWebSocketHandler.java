@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
@@ -28,6 +29,9 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
     private final PetRepo petRepository;
     private final VitalSignsService vitalSignsService;
     private final ObjectMapper mapper;
+
+    // Queue to handle message sending sequentially
+    private final ConcurrentLinkedQueue<TextMessage> messageQueue = new ConcurrentLinkedQueue<>();
 
     public VitalSignsWebSocketHandler(PetRepo petRepository, VitalSignsService vitalSignsService) {
         this.petRepository = petRepository;
@@ -91,7 +95,9 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
 
                 // Send vital signs data via WebSocket
                 if (session != null && session.isOpen()) {
-                    session.sendMessage(new TextMessage(mapper.writeValueAsString(response)));
+                    synchronized (session) {
+                        session.sendMessage(new TextMessage(mapper.writeValueAsString(response)));
+                    }
                 }
             }
 
@@ -99,5 +105,4 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
             e.printStackTrace();
         }
     }
-
 }
