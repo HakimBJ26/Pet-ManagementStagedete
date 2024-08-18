@@ -64,9 +64,9 @@ public PetDto addSafeZonesToPet(Integer petId, Map<SafeZoneType, List<PositionPe
         SafeZoneType type = entry.getKey();
         List<PositionPetDto> positionDtos = entry.getValue();
 
-        if (positionDtos.size() < 3) {
-            throw new IllegalArgumentException("A safe zone must have at least 3 points.");
-        }
+//        if (positionDtos.size() < 3) {
+//            throw new IllegalArgumentException("A safe zone must have at least 3 points.");
+//        }
 
         List<Position> positions = positionDtos.stream()
                 .map(dto -> new Position(dto.lat(), dto.lng()))
