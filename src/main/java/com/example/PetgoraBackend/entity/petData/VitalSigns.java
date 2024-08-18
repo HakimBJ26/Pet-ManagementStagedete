@@ -16,6 +16,7 @@ public class VitalSigns {
     private String temperature;
     private String activityLevel;
     private LocalDateTime lastUpdated;
+    private String steps;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE) // Use MERGE to avoid detachment issues
     @JoinColumn(name = "pet_id", referencedColumnName = "id")
@@ -60,6 +61,14 @@ public class VitalSigns {
 
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public String getSteps() {
+        return steps;
+    }
+
+    public void setSteps(String steps) {
+        this.steps = steps;
     }
 
     public Pet getPet() {

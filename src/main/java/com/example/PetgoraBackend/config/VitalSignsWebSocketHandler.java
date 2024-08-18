@@ -83,6 +83,7 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 vitalSigns.setTemperature(vitalSignsNode.get("temperature").asText());
                 vitalSigns.setActivityLevel(vitalSignsNode.get("activityLevel").asText());
                 vitalSigns.setLastUpdated(OffsetDateTime.parse(vitalSignsNode.get("lastUpdated").asText()).toLocalDateTime());
+                vitalSigns.setSteps(vitalSignsNode.get("steps").asText());
                 vitalSignsService.saveOrUpdateVitalSigns(vitalSigns);
 
                 // Prepare the simplified response
@@ -92,7 +93,7 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 response.put("temperature", vitalSignsNode.get("temperature").asText());
                 response.put("activityLevel", vitalSignsNode.get("activityLevel").asText());
                 response.put("lastUpdated", vitalSignsNode.get("lastUpdated").asText());
-
+                response.put("steps", vitalSignsNode.get("steps").asText());
                 // Send vital signs data via WebSocket
                 if (session != null && session.isOpen()) {
                     synchronized (session) {
