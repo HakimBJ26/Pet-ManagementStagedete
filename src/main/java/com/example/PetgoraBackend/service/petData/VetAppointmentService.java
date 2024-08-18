@@ -6,4 +6,6 @@ import com.example.PetgoraBackend.dto.petData.VetAppointmentDTO;
 public interface VetAppointmentService {
     VetAppointmentDTO createVetAppointment(VetAppointmentDTO vetAppointmentDTO, Integer petId);
     VetAppointmentComparisonDTO getLastTwoVetAppointments(Integer petId);
+    void deleteVetAppointment(Integer id);
+    VetAppointmentDTO updateVetAppointment(Integer id, VetAppointmentDTO vetAppointmentDTO);
 }
