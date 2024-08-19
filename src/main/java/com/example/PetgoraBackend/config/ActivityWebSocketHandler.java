@@ -2,9 +2,9 @@ package com.example.PetgoraBackend.config;
 
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.entity.User;
-import com.example.PetgoraBackend.entity.petData.VitalSigns;
+import com.example.PetgoraBackend.entity.petData.Activity;
 import com.example.PetgoraBackend.repository.PetRepo;
-import com.example.PetgoraBackend.service.petData.VitalSignsService;
+import com.example.PetgoraBackend.service.petData.ActivityService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -22,20 +22,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
-public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
+public class ActivityWebSocketHandler extends TextWebSocketHandler {
 
     private final Set<WebSocketSession> sessions = new HashSet<>();
     private final Map<Integer, WebSocketSession> userSessions = new HashMap<>();
     private final PetRepo petRepository;
-    private final VitalSignsService vitalSignsService;
+    private final ActivityService activityService;
     private final ObjectMapper mapper;
 
     // Queue to handle message sending sequentially
     private final ConcurrentLinkedQueue<TextMessage> messageQueue = new ConcurrentLinkedQueue<>();
 
-    public VitalSignsWebSocketHandler(PetRepo petRepository, VitalSignsService vitalSignsService) {
+    public ActivityWebSocketHandler(PetRepo petRepository, ActivityService activityService) {
         this.petRepository = petRepository;
-        this.vitalSignsService = vitalSignsService;
+        this.activityService = activityService;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule()); // Register the JavaTimeModule
     }
@@ -63,36 +63,41 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
         return null;
     }
 
-    public void sendVitalSignsData(String message) {
+    public void sendActivityData(String message) {
         try {
             JsonNode jsonNode = mapper.readTree(message);
 
-            // Extract vital signs data
-            JsonNode vitalSignsNode = jsonNode.get("vitalSigns");
-            Integer petId = vitalSignsNode.get("petId").asInt();
+            // Extract activity data
+            JsonNode activityNode = jsonNode.get("activity");
+            Integer petId = activityNode.get("petId").asInt();
             Pet pet = petRepository.findById(petId).orElse(null);
 
             if (pet != null) {
                 User owner = pet.getOwner();
                 WebSocketSession session = userSessions.get(owner.getId());
 
-                // Save vital signs data to the database
-                VitalSigns vitalSigns = new VitalSigns();
-                vitalSigns.setPet(pet); // Attach the managed Pet entity
-                vitalSigns.setHeartRate(vitalSignsNode.get("heartRate").asText());
-                vitalSigns.setTemperature(vitalSignsNode.get("temperature").asText());
-                vitalSigns.setActivityLevel(vitalSignsNode.get("activityLevel").asText());
-                vitalSigns.setLastUpdated(OffsetDateTime.parse(vitalSignsNode.get("lastUpdated").asText()).toLocalDateTime());
-                vitalSignsService.saveOrUpdateVitalSigns(vitalSigns);
+                // Save activity data to the database
+                Activity activity = new Activity();
+                activity.setPet(pet); // Attach the managed Pet entity
+                activity.setHeartRate(activityNode.get("heartRate").asText());
+                activity.setSteps(activityNode.get("steps").asText());
+                activity.setAvergeBurn(activityNode.get("averageBurn").asText());
+                activity.setHealthScore(activityNode.get("healthScore").asText());
+                activity.setTimeSpentInActivity(activityNode.get("timeSpentInActivity").asText());
+                activity.setLastUpdated(OffsetDateTime.parse(activityNode.get("lastUpdated").asText()).toLocalDateTime());
+                activityService.saveOrUpdateActivity(activity);
 
                 // Prepare the simplified response
                 Map<String, Object> response = new HashMap<>();
                 response.put("petId", petId);
-                response.put("heartRate", vitalSignsNode.get("heartRate").asText());
-                response.put("temperature", vitalSignsNode.get("temperature").asText());
-                response.put("activityLevel", vitalSignsNode.get("activityLevel").asText());
-                response.put("lastUpdated", vitalSignsNode.get("lastUpdated").asText());
-                // Send vital signs data via WebSocket
+                response.put("heartRate", activityNode.get("heartRate").asText());
+                response.put("steps", activityNode.get("steps").asText());
+                response.put("averageBurn", activityNode.get("averageBurn").asText());
+                response.put("healthScore", activityNode.get("healthScore").asText());
+                response.put("timeSpentInActivity", activityNode.get("timeSpentInActivity").asText());
+                response.put("lastUpdated", activityNode.get("lastUpdated").asText());
+
+                // Send activity data via WebSocket
                 if (session != null && session.isOpen()) {
                     synchronized (session) {
                         session.sendMessage(new TextMessage(mapper.writeValueAsString(response)));
