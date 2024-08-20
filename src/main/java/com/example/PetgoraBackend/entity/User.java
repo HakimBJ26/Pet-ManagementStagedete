@@ -32,6 +32,10 @@ public class User implements UserDetails {
     private String resetPasswordToken;
 
 
+
+    private String messagingToken;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
@@ -117,5 +121,11 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public void setMessagingToken(String messagingToken) {
+        this.messagingToken = messagingToken;
+    }
 
+    public String getMessagingToken() {
+        return messagingToken;
+    }
 }
