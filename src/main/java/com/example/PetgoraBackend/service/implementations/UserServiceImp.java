@@ -131,13 +131,16 @@ public class UserServiceImp implements IUsersManagementService {
             User user = usersRepo.findUserByEmail(userLoginDto.email())
                     .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
 
+            if (!user.isApproved()) {
+                throw new IllegalArgumentException("User is not approved");
+            }
+
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userLoginDto.email(), userLoginDto.password());
             authenticationManager.authenticate(authenticationToken);
 
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     user.getEmail(), user.getPassword(), Collections.emptyList());
-
 
             ResponseCookie accessTokenCookie = jwtUtils.generateAccessTokenCookie(userDetails);
             ResponseCookie refreshTokenCookie = jwtUtils.generateRefreshTokenCookie(userDetails);
@@ -161,6 +164,7 @@ public class UserServiceImp implements IUsersManagementService {
         }
     }
 
+
     @Override
     public UserDto updateUserProfile(UserDto userDto, HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -175,10 +179,8 @@ public class UserServiceImp implements IUsersManagementService {
             currentUser.setPhone(userDto.phone());
             User updatedUser = usersRepo.save(currentUser);
 
-            // Generate new JWT token
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(updatedUser.getEmail(), "", new ArrayList<>());
 
-            // Set the new access and refresh tokens in the HttpOnly cookies
             ResponseCookie accessTokenCookie = jwtUtils.generateAccessTokenCookie(userDetails);
             ResponseCookie refreshTokenCookie = jwtUtils.generateRefreshTokenCookie(userDetails);
 
@@ -193,7 +195,7 @@ public class UserServiceImp implements IUsersManagementService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto) { // Changed Long to int
+    public ResponseEntity<String> updateUserByAdmin(int userId, UserDto userDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
 
@@ -284,7 +286,7 @@ public class UserServiceImp implements IUsersManagementService {
     }
 
 
-@Override
+    @Override
     public void logout(HttpServletResponse response) {
         ResponseCookie cleanAccessTokenCookie = jwtUtils.getCleanAccessTokenCookie();
         ResponseCookie cleanRefreshTokenCookie = jwtUtils.getCleanRefreshTokenCookie();
@@ -397,6 +399,53 @@ public class UserServiceImp implements IUsersManagementService {
                 })
                 .map(UserMapper.INSTANCE::toUserDto)
                 .collect(Collectors.toList());
+    }
+
+@Override
+    public void saveMessagingToken(Integer userId, String token) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to modify this user's token.");
+        }
+
+        authenticatedUser.setMessagingToken(token);
+        usersRepo.save(authenticatedUser);
+    }
+
+    @Override
+    public String getMessagingTokenById(Integer userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to view this user's token.");
+        }
+
+        return authenticatedUser.getMessagingToken();
+    }
+
+
+
+    @Override
+    public void removeMessagingToken(Integer userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this user's messaging token.");
+        }
+
+        authenticatedUser.setMessagingToken(null);
+        usersRepo.save(authenticatedUser);
     }
 
 

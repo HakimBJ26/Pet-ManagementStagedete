@@ -5,8 +5,10 @@ import com.example.PetgoraBackend.dto.UserLoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IUsersManagementService {
 
@@ -41,6 +43,12 @@ public interface IUsersManagementService {
     ResponseEntity<String> resetPassword(String newPassword, String confirmPassword, String token, HttpServletResponse response);
 
     List<UserDto> searchVeterinariansByName(String name);
+
+    public void saveMessagingToken(Integer userId, String token) ;
+
+    public String getMessagingTokenById(Integer userId);
+    void removeMessagingToken(Integer userId);
+
 
 }
 

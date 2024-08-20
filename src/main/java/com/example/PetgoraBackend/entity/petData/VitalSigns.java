@@ -17,7 +17,7 @@ public class VitalSigns {
     private String activityLevel;
     private LocalDateTime lastUpdated;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE) // Use MERGE to avoid detachment issues
     @JoinColumn(name = "pet_id", referencedColumnName = "id")
     private Pet pet;
 

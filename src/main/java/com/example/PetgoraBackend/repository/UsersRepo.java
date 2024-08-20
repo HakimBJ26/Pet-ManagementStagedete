@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-
+@Repository
 public interface  UsersRepo extends JpaRepository<User, Integer> {
 
         Optional<User> findUserByEmail(String email);
@@ -23,6 +23,13 @@ public interface  UsersRepo extends JpaRepository<User, Integer> {
 
         @Query("SELECT u FROM User u WHERE u.role = 'VETERINARIAN' AND LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
         List<User> findVeterinariansByName(String name);
+
+
+        Optional<User> findByName(String name);
+
+
+
+
 
 }
 

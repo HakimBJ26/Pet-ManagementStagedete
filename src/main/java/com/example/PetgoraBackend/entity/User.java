@@ -1,5 +1,6 @@
 package com.example.PetgoraBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,14 +25,15 @@ public class User implements UserDetails {
 
     private String password;
     private String city;
-
-
     private String role;
     private String phone;
     private boolean approved = false;
     private boolean resetPasswordRequested;
-
     private String resetPasswordToken;
+
+
+
+    private String messagingToken;
 
 
     @Override
@@ -119,4 +121,11 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public void setMessagingToken(String messagingToken) {
+        this.messagingToken = messagingToken;
+    }
+
+    public String getMessagingToken() {
+        return messagingToken;
+    }
 }

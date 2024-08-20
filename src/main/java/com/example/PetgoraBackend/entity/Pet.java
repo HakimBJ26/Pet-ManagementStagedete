@@ -1,29 +1,55 @@
 package com.example.PetgoraBackend.entity;
 
+import com.example.PetgoraBackend.entity.alerts.NotificationTimestamps;
+import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pet")
 public class Pet {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
+
+    public void setPetGoal(PetGoal petGoal) {
+        this.petGoal = petGoal;
+    }
+
+    public PetGoal getPetGoal() {
+        return petGoal;
+    }
+
     private String breed;
     private Integer age;
 
-    // blob image
+    @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PetGoal petGoal;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pet_id")
+    private List<SafeZone> safeZones = new ArrayList<>();
+
+
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pet_id")
+    private List<DangerZone> dangerZones = new ArrayList<>();
+
     @Lob
     @Column(name = "image", columnDefinition = "LONGBLOB")
     private byte[] image;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id") // Foreign key referencing User
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    // Getters and setters
+    @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL)
+    private NotificationTimestamps notificationTimestamps;
+
     public Integer getId() {
         return id;
     }
@@ -70,5 +96,28 @@ public class Pet {
 
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    public void setNotificationTimestamps(NotificationTimestamps notificationTimestamps) {
+        this.notificationTimestamps = notificationTimestamps;
+    }
+
+    public List<SafeZone> getSafeZones() {
+        return safeZones;
+    }
+
+    public void setSafeZones(List<SafeZone> safeZones) {
+        this.safeZones = safeZones;
+    }
+    public List<DangerZone> getDangerZones() {
+        return dangerZones;
+    }
+
+    public void setDangerZones(List<DangerZone> dangerZones) {
+        this.dangerZones = dangerZones;
+    }
+
+    public NotificationTimestamps getNotificationTimestamps() {
+        return notificationTimestamps;
     }
 }
