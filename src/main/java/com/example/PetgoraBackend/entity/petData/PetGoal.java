@@ -11,7 +11,7 @@ public class PetGoal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne
     @JoinColumn(name = "pet_id", referencedColumnName = "id", unique = true)
     private Pet pet;
 

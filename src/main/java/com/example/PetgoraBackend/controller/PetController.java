@@ -2,6 +2,7 @@ package com.example.PetgoraBackend.controller;
 
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.dto.PetsDTO;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.service.IPetService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class PetController {
     }
 
     @GetMapping("/current")
-    public List<Pet> getCurrentUserPets() {
+    public List<PetsDTO> getCurrentUserPets() {
         return petService.getCurrentUserPets();
     }
 

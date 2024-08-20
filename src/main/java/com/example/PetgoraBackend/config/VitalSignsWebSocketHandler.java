@@ -1,9 +1,14 @@
 package com.example.PetgoraBackend.config;
 
+import com.example.PetgoraBackend.dto.alerts.HealthAlertDTO;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.entity.User;
+import com.example.PetgoraBackend.entity.alerts.NotificationTimestamps;
 import com.example.PetgoraBackend.entity.petData.VitalSigns;
 import com.example.PetgoraBackend.repository.PetRepo;
+import com.example.PetgoraBackend.repository.alerts.NotificationTimestampsRepository;
+import com.example.PetgoraBackend.service.alerts.HealthAlertService;
+import com.example.PetgoraBackend.service.notif.FirebaseNotificationService;
 import com.example.PetgoraBackend.service.petData.VitalSignsService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,12 +19,12 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
@@ -28,16 +33,21 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
     private final Map<Integer, WebSocketSession> userSessions = new HashMap<>();
     private final PetRepo petRepository;
     private final VitalSignsService vitalSignsService;
+    private final FirebaseNotificationService firebaseNotificationService;
     private final ObjectMapper mapper;
+    private final HealthAlertService healthAlertService;
+    private final NotificationTimestampsRepository notificationTimestampsRepository;  // Add the repository
 
-    // Queue to handle message sending sequentially
-    private final ConcurrentLinkedQueue<TextMessage> messageQueue = new ConcurrentLinkedQueue<>();
-
-    public VitalSignsWebSocketHandler(PetRepo petRepository, VitalSignsService vitalSignsService) {
+    public VitalSignsWebSocketHandler(PetRepo petRepository, VitalSignsService vitalSignsService,
+                                      FirebaseNotificationService firebaseNotificationService, HealthAlertService healthAlertService,
+                                      NotificationTimestampsRepository notificationTimestampsRepository) {  // Inject the repository
         this.petRepository = petRepository;
         this.vitalSignsService = vitalSignsService;
+        this.firebaseNotificationService = firebaseNotificationService;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule()); // Register the JavaTimeModule
+        this.healthAlertService = healthAlertService;
+        this.notificationTimestampsRepository = notificationTimestampsRepository;  // Initialize the repository
     }
 
     @Override
@@ -67,7 +77,6 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
         try {
             JsonNode jsonNode = mapper.readTree(message);
 
-            // Extract vital signs data
             JsonNode vitalSignsNode = jsonNode.get("vitalSigns");
             Integer petId = vitalSignsNode.get("petId").asInt();
             Pet pet = petRepository.findById(petId).orElse(null);
@@ -76,9 +85,8 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 User owner = pet.getOwner();
                 WebSocketSession session = userSessions.get(owner.getId());
 
-                // Save vital signs data to the database
                 VitalSigns vitalSigns = new VitalSigns();
-                vitalSigns.setPet(pet); // Attach the managed Pet entity
+                vitalSigns.setPet(pet);
                 vitalSigns.setHeartRate(vitalSignsNode.get("heartRate").asText());
                 vitalSigns.setTemperature(vitalSignsNode.get("temperature").asText());
                 vitalSigns.setActivityLevel(vitalSignsNode.get("activityLevel").asText());
@@ -92,17 +100,94 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 response.put("temperature", vitalSignsNode.get("temperature").asText());
                 response.put("activityLevel", vitalSignsNode.get("activityLevel").asText());
                 response.put("lastUpdated", vitalSignsNode.get("lastUpdated").asText());
-
                 // Send vital signs data via WebSocket
                 if (session != null && session.isOpen()) {
                     synchronized (session) {
                         session.sendMessage(new TextMessage(mapper.writeValueAsString(response)));
                     }
                 }
-            }
 
+                String token = owner.getMessagingToken();
+                if (token != null) {
+                    token = token.replace("\"", "").trim();
+                    int heartRate = vitalSignsNode.get("heartRate").asInt();
+                    double temperature = vitalSignsNode.get("temperature").asDouble();
+                    String activityLevel = vitalSignsNode.get("activityLevel").asText();
+
+                    // High heart rate notification
+                    if (heartRate >= 90) {
+                        sendHealthAlert(owner, pet, token, heartRate, "High Heart Rate", "High", "consult a veterinarian immediately", "lastHeartRateNotification");
+                    }
+
+                    // Low temperature notification
+                    if (temperature <= 38.0) {
+                        sendHealthAlert(owner, pet, token, temperature, "Low Temperature", "Medium", "keep your pet warm and consult a vet if needed", "lastTemperatureNotification");
+                    }
+
+                    // Unusual activity level notification
+                    if (activityLevel.equals("Low")) {
+                        sendHealthAlert(owner, pet, token, activityLevel, "Low Activity Level", "Medium", "ensure your pet is active or consult a vet", "lastActivityLevelNotification");
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendHealthAlert(User owner, Pet pet, String token, Object value, String alertType, String severity, String action, String notificationField) throws Exception {
+        NotificationTimestamps timestamps = pet.getNotificationTimestamps();
+        if (timestamps == null) {
+            timestamps = new NotificationTimestamps();
+            timestamps.setPet(pet);
+            pet.setNotificationTimestamps(timestamps);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastNotificationTime = getLastNotificationTime(timestamps, notificationField);
+
+        if (lastNotificationTime == null || lastNotificationTime.plusMinutes(10).isBefore(now)) {
+            String title = alertType + " noticed for " + pet.getName() + ": " + value;
+            String body = "Hello " + owner.getName() + ", check your pet's vital signs!";
+            firebaseNotificationService.sendNotification(token, title, body);
+
+            HealthAlertDTO healthAlertDTO = new HealthAlertDTO();
+            healthAlertDTO.setAction(action);
+            healthAlertDTO.setSeverity(severity);
+            healthAlertDTO.setTitle(alertType + " Alert: " + value);
+            healthAlertDTO.setPetId(pet.getId());
+            healthAlertService.saveHealthAlert(healthAlertDTO);
+
+            // Update the timestamp
+            updateNotificationTime(timestamps, notificationField, now);
+            notificationTimestampsRepository.save(timestamps);
+        }
+    }
+
+    private LocalDateTime getLastNotificationTime(NotificationTimestamps timestamps, String notificationField) {
+        switch (notificationField) {
+            case "lastHeartRateNotification":
+                return timestamps.getLastHeartRateNotification();
+            case "lastTemperatureNotification":
+                return timestamps.getLastTemperatureNotification();
+            case "lastActivityLevelNotification":
+                return timestamps.getLastActivityLevelNotification();
+            default:
+                return null;
+        }
+    }
+
+    private void updateNotificationTime(NotificationTimestamps timestamps, String notificationField, LocalDateTime now) {
+        switch (notificationField) {
+            case "lastHeartRateNotification":
+                timestamps.setLastHeartRateNotification(now);
+                break;
+            case "lastTemperatureNotification":
+                timestamps.setLastTemperatureNotification(now);
+                break;
+            case "lastActivityLevelNotification":
+                timestamps.setLastActivityLevelNotification(now);
+                break;
         }
     }
 }

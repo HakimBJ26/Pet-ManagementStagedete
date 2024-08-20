@@ -44,6 +44,12 @@ public interface IUsersManagementService {
 
     List<UserDto> searchVeterinariansByName(String name);
 
+    public void saveMessagingToken(Integer userId, String token) ;
+
+    public String getMessagingTokenById(Integer userId);
+    void removeMessagingToken(Integer userId);
+
+
 }
 
 
