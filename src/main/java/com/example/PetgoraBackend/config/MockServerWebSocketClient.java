@@ -25,13 +25,15 @@ public class MockServerWebSocketClient {
     private final Map<String, WebSocketClient> deviceWebSocketClients = new HashMap<>();
     private final LocationWebSocketHandler locationWebSocketHandler;
     private final VitalSignsWebSocketHandler vitalSignsWebSocketHandler;
+    private final ActivityWebSocketHandler activityWebSocketHandler;
     private final DeviceRepository deviceRepository;
 
     public MockServerWebSocketClient(LocationWebSocketHandler locationWebSocketHandler,
-                                     VitalSignsWebSocketHandler vitalSignsWebSocketHandler,
+                                     VitalSignsWebSocketHandler vitalSignsWebSocketHandler, ActivityWebSocketHandler activityWebSocketHandler,
                                      DeviceRepository deviceRepository) {
         this.locationWebSocketHandler = locationWebSocketHandler;
         this.vitalSignsWebSocketHandler = vitalSignsWebSocketHandler;
+        this.activityWebSocketHandler = activityWebSocketHandler;
         this.deviceRepository = deviceRepository;
     }
 
@@ -123,6 +125,8 @@ public class MockServerWebSocketClient {
                     if (tokenVerified) {
                         locationWebSocketHandler.sendLocationData(message);
                         vitalSignsWebSocketHandler.sendVitalSignsData(message);
+                        activityWebSocketHandler.sendActivityData(message);
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
