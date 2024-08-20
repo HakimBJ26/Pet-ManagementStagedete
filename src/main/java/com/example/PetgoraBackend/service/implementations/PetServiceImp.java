@@ -1,6 +1,7 @@
 package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.dto.PetsDTO;
 import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
@@ -131,14 +132,22 @@ public class PetServiceImp implements IPetService {
     }
 
     @Override
-    public List<Pet> getCurrentUserPets() {
+    public List<PetsDTO> getCurrentUserPets() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User owner = usersRepo.findUserByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
+
         List<Pet> pets = petRepo.findByOwner_Id(owner.getId());
-        return pets;
+
+        // Convert the list of Pet entities to a list of PetDTOs
+        List<PetsDTO> petDTOs = pets.stream()
+                .map(pet -> new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge()))
+                .collect(Collectors.toList());
+
+        return petDTOs;
     }
+
 
     @Override
     public Pet uploadPetImage(Integer petId, byte[] image) {

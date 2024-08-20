@@ -107,4 +107,22 @@ public class UserManagementController {
         return usersManagementService.searchVeterinariansByName(name);
     }
 
+    @PostMapping("/messaging-token/{id}")
+    public ResponseEntity<Void> saveMessagingToken(@PathVariable Integer id, @RequestBody String token) {
+        usersManagementService.saveMessagingToken(id, token);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/messaging-token/{id}")
+    public ResponseEntity<String> getMessagingToken(@PathVariable Integer id) {
+        String token = usersManagementService.getMessagingTokenById(id);
+        return ResponseEntity.ok(token);
+    }
+
+    @DeleteMapping("/messaging-token/{id}")
+    public ResponseEntity<Void> removeMessagingToken(@PathVariable Integer id) {
+        usersManagementService.removeMessagingToken(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -401,6 +401,53 @@ public class UserServiceImp implements IUsersManagementService {
                 .collect(Collectors.toList());
     }
 
+@Override
+    public void saveMessagingToken(Integer userId, String token) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to modify this user's token.");
+        }
+
+        authenticatedUser.setMessagingToken(token);
+        usersRepo.save(authenticatedUser);
+    }
+
+    @Override
+    public String getMessagingTokenById(Integer userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to view this user's token.");
+        }
+
+        return authenticatedUser.getMessagingToken();
+    }
+
+
+
+    @Override
+    public void removeMessagingToken(Integer userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+
+        User authenticatedUser = usersRepo.findUserByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this user's messaging token.");
+        }
+
+        authenticatedUser.setMessagingToken(null);
+        usersRepo.save(authenticatedUser);
+    }
+
 
 
 
