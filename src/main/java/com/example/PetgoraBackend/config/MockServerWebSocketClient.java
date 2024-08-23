@@ -28,16 +28,19 @@ public class MockServerWebSocketClient {
     private final SleepPatternWebSocketHandler sleepPatternWebSocketHandler;
 
     private final HealthStatsWebSocketHandler healthStatsWebSocketHandler;
+    private final ActivityWebSocketHandler activityWebSocketHandler;
+
 
     private final DeviceRepository deviceRepository;
 
     public MockServerWebSocketClient(LocationWebSocketHandler locationWebSocketHandler,
-                                     VitalSignsWebSocketHandler vitalSignsWebSocketHandler, SleepPatternWebSocketHandler sleepPatternWebSocketHandler, HealthStatsWebSocketHandler healthStatsWebSocketHandler,
+                                     VitalSignsWebSocketHandler vitalSignsWebSocketHandler, SleepPatternWebSocketHandler sleepPatternWebSocketHandler,ActivityWebSocketHandler activityWebSocketHandler, HealthStatsWebSocketHandler healthStatsWebSocketHandler,
                                      DeviceRepository deviceRepository) {
         this.locationWebSocketHandler = locationWebSocketHandler;
         this.vitalSignsWebSocketHandler = vitalSignsWebSocketHandler;
         this.sleepPatternWebSocketHandler = sleepPatternWebSocketHandler;
         this.healthStatsWebSocketHandler = healthStatsWebSocketHandler;
+        this.activityWebSocketHandler = activityWebSocketHandler;
         this.deviceRepository = deviceRepository;
     }
 
@@ -129,8 +132,12 @@ public class MockServerWebSocketClient {
                     if (tokenVerified) {
                         locationWebSocketHandler.sendLocationData(message);
                         vitalSignsWebSocketHandler.sendVitalSignsData(message);
+
                         sleepPatternWebSocketHandler.sendSleepPatternData(message);
                         healthStatsWebSocketHandler.handleHealthStatsData(message);
+
+                        activityWebSocketHandler.sendActivityData(message);
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

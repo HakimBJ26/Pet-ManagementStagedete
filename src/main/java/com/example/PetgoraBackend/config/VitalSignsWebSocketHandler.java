@@ -100,7 +100,6 @@ public class VitalSignsWebSocketHandler extends TextWebSocketHandler {
                 response.put("temperature", vitalSignsNode.get("temperature").asText());
                 response.put("activityLevel", vitalSignsNode.get("activityLevel").asText());
                 response.put("lastUpdated", vitalSignsNode.get("lastUpdated").asText());
-
                 // Send vital signs data via WebSocket
                 if (session != null && session.isOpen()) {
                     synchronized (session) {
