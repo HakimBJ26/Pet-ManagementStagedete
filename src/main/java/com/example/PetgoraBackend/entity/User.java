@@ -34,7 +34,15 @@ public class User implements UserDetails {
 
 
     private String messagingToken;
+    private String userImageUrl;
 
+    public void setUserImageUrl(String userImageUrl) {
+        this.userImageUrl = userImageUrl;
+    }
+
+    public String getUserImageUrl() {
+        return userImageUrl;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

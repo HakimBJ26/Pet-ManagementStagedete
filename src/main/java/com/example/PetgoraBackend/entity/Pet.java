@@ -25,7 +25,18 @@ public class Pet {
     }
 
     private String breed;
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     private Integer age;
+
+    private String imageUrl;
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
     @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private PetGoal petGoal;

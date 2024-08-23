@@ -36,6 +36,13 @@ public class PetGoalController {
         return petGoal.map(value -> ResponseEntity.ok(petGoalMapper.toDTO(value)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+    @GetMapping("/pet/{petId}")
+    public ResponseEntity<PetGoalDto> getPetGoalByPetId(@PathVariable Integer petId) {
+        Optional<PetGoal> petGoal = petGoalService.getPetGoalByPetId(petId);
+        return petGoal.map(value -> ResponseEntity.ok(petGoalMapper.toDTO(value)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 
     @GetMapping
     public ResponseEntity<List<PetGoalDto>> getAllPetGoals() {

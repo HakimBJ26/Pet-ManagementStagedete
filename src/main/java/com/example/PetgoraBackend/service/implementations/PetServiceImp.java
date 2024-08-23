@@ -2,11 +2,8 @@ package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.dto.PetsDTO;
-import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
-import com.example.PetgoraBackend.entity.Position;
-import com.example.PetgoraBackend.entity.SafeZone;
 import com.example.PetgoraBackend.entity.User; // Import User entity
 import com.example.PetgoraBackend.mapper.PetMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
@@ -142,11 +139,12 @@ public class PetServiceImp implements IPetService {
 
         // Convert the list of Pet entities to a list of PetDTOs
         List<PetsDTO> petDTOs = pets.stream()
-                .map(pet -> new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge()))
+                .map(pet -> new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl()))
                 .collect(Collectors.toList());
 
         return petDTOs;
     }
+
 
 
     @Override
@@ -167,5 +165,34 @@ public class PetServiceImp implements IPetService {
     }
 
 
-}
+    @Override
+    public PetsDTO updatePetImageUrl(Integer petId, String imageUrl) {
+        // Get the authenticated user's email
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
+        // Find the pet owner
+        User owner = usersRepo.findUserByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
+
+        // Find the pet by ID
+        Pet pet = petRepo.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+
+        // Ensure the authenticated user is the owner of the pet
+        if (!pet.getOwner().getId().equals(owner.getId())) {
+            throw new EntityNotFoundException("You are not the owner of this pet");
+        }
+
+        // Update the pet's image URL
+        pet.setImageUrl(imageUrl);
+
+        // Save the updated pet
+        petRepo.save(pet);
+
+        // Return the updated PetDTO
+        return new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl());
+    }
+
+
+}

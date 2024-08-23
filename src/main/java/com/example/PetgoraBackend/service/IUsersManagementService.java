@@ -49,6 +49,11 @@ public interface IUsersManagementService {
     public String getMessagingTokenById(Integer userId);
     void removeMessagingToken(Integer userId);
 
+    void updateUserImageUrl(Integer userId, String userImageUrl);
+
+    String getUserImageUrl(Integer userId);
+
+
 
 }
 
