@@ -2,18 +2,20 @@ package com.example.PetgoraBackend.config;
 
 import com.example.PetgoraBackend.entity.LocationData;
 import com.example.PetgoraBackend.entity.Pet;
+import com.example.PetgoraBackend.entity.Position;
 import com.example.PetgoraBackend.entity.User;
 import com.example.PetgoraBackend.repository.PetRepo;
+import com.example.PetgoraBackend.service.map.WebSocketService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,13 +23,14 @@ import java.util.Set;
 
 @Component
 public class LocationWebSocketHandler extends TextWebSocketHandler {
-
+    private final WebSocketService webSocketService;
     private final Set<WebSocketSession> sessions = new HashSet<>();
     private final Map<Integer, WebSocketSession> userSessions = new HashMap<>();
     private final PetRepo petRepository;
     private final ObjectMapper mapper;
 
-    public LocationWebSocketHandler(PetRepo petRepository) {
+    public LocationWebSocketHandler(WebSocketService webSocketService, PetRepo petRepository) {
+        this.webSocketService = webSocketService;
         this.petRepository = petRepository;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule()); // Register the JavaTimeModule
@@ -79,8 +82,29 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
                 }
             }
 
+            Position position = new Position(locationData.getLatitude(), locationData.getLongitude());
+            webSocketService.updatePetPosition(locationData.getPetId(), position);
+
+            // Log pour déboguer
+            System.out.println("Données de localisation reçues et mises à jour: " + locationData);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        // Supposons que le message contient les données de localisation
+        String payload = ((TextMessage) message).getPayload();
+        JsonNode jsonNode = new ObjectMapper().readTree(payload);
+
+        // Extraire les données de localisation
+        Integer petId = jsonNode.get("petId").asInt();
+        double latitude = jsonNode.get("latitude").asDouble();
+        double longitude = jsonNode.get("longitude").asDouble();
+
+        // Mettre à jour la position du pet dans le service WebSocket
+        Position position = new Position(latitude, longitude);
+        webSocketService.updatePetPosition(petId, position);
     }
 }

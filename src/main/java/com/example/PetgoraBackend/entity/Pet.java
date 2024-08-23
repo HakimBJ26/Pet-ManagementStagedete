@@ -1,5 +1,6 @@
 package com.example.PetgoraBackend.entity;
 
+import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
 
@@ -28,11 +29,10 @@ public class Pet {
 
     @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private PetGoal petGoal;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "pet_id")
     private List<SafeZone> safeZones = new ArrayList<>();
-
-
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pet_id")
@@ -45,6 +45,7 @@ public class Pet {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
 
     public Integer getId() {
         return id;
