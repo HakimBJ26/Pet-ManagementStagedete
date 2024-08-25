@@ -1,10 +1,7 @@
 package com.example.PetgoraBackend.entity;
 
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 public class SafeZone {
@@ -13,6 +10,8 @@ public class SafeZone {
     private Long id;
     @Enumerated(EnumType.STRING)
     private SafeZoneType type;
+
+
     @ManyToOne
     @JoinColumn(name = "pet_id")
     private Pet pet;
@@ -20,19 +19,14 @@ public class SafeZone {
     private List<Position> positions;
 
     public SafeZone() {}
-
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
-
-
     public List<Position> getPositions() {
-        return positions;
-    }
+        return positions;}
 
     public void setPositions(List<Position> positions) {
         this.positions = positions;
