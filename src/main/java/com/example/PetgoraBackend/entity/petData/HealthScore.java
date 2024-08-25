@@ -18,7 +18,7 @@ public class HealthScore {
     private String heartRate;
     private String speed;
     private LocalDateTime timestamp;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE) // Use MERGE to avoid detachment issues
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "pet_id", referencedColumnName = "id")
     private Pet pet;
 

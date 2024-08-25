@@ -8,6 +8,7 @@ import com.example.PetgoraBackend.mapper.petData.HealthScoreMapper;
 import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.petData.HealthScoreRepository;
 import com.example.PetgoraBackend.service.petData.HealthScoreService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,22 +69,30 @@ public class HealthScoreServiceImpl implements HealthScoreService {
     }
 
     @Override
-    public void saveOrUpdateHealthScore(HealthScoreDto healthScoreDTO) {
-        Pet pet = petRepository.findById(healthScoreDTO.getPetId())
-                .orElseThrow(() -> new RessourceNotFoundException("Pet not found"));
+    public void saveOrUpdateHealthScore(HealthScore healthScore) {
+        // Trouver l'animal par son ID
+        Pet pet = petRepository.findById(healthScore.getPet().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
+
+
+        healthScore.setPet(pet);
+
 
         HealthScore existingHealthScore = healthScoreRepository.findByPetId(pet.getId());
         if (existingHealthScore != null) {
-            existingHealthScore.setAvgHealth(healthScoreDTO.getAvgHealth());
-            existingHealthScore.setActivityTime(healthScoreDTO.getActivityTime());
-            existingHealthScore.setCalories(healthScoreDTO.getCalories());
-            existingHealthScore.setHeartRate(healthScoreDTO.getHeartRate());
-            existingHealthScore.setSpeed(healthScoreDTO.getSpeed());
-            existingHealthScore.setTimestamp(healthScoreDTO.getTimestamp());
+
+            existingHealthScore.setAvgHealth(healthScore.getAvgHealth());
+            existingHealthScore.setActivityTime(healthScore.getActivityTime());
+            existingHealthScore.setCalories(healthScore.getCalories());
+            existingHealthScore.setHeartRate(healthScore.getHeartRate());
+            existingHealthScore.setSpeed(healthScore.getSpeed());
+            existingHealthScore.setTimestamp(healthScore.getTimestamp());
             healthScoreRepository.save(existingHealthScore);
         } else {
-            HealthScore healthScore = healthScoreMapper.toEntity(healthScoreDTO, pet);
+
             healthScoreRepository.save(healthScore);
         }
     }
+
+
 }

@@ -27,14 +27,18 @@ public class MockServerWebSocketClient {
     private final VitalSignsWebSocketHandler vitalSignsWebSocketHandler;
     private final ActivityWebSocketHandler activityWebSocketHandler;
     private final DeviceRepository deviceRepository;
+    private final HealthScoreWebSocketHandler healthScoreWebSocketHandler;
+
 
     public MockServerWebSocketClient(LocationWebSocketHandler locationWebSocketHandler,
                                      VitalSignsWebSocketHandler vitalSignsWebSocketHandler, ActivityWebSocketHandler activityWebSocketHandler,
-                                     DeviceRepository deviceRepository) {
+                                     DeviceRepository deviceRepository,HealthScoreWebSocketHandler healthScoreWebSocketHandler) {
         this.locationWebSocketHandler = locationWebSocketHandler;
         this.vitalSignsWebSocketHandler = vitalSignsWebSocketHandler;
         this.activityWebSocketHandler = activityWebSocketHandler;
         this.deviceRepository = deviceRepository;
+        this.healthScoreWebSocketHandler = healthScoreWebSocketHandler;
+
     }
 
     @PostConstruct
@@ -126,6 +130,9 @@ public class MockServerWebSocketClient {
                         locationWebSocketHandler.sendLocationData(message);
                         vitalSignsWebSocketHandler.sendVitalSignsData(message);
                         activityWebSocketHandler.sendActivityData(message);
+                        healthScoreWebSocketHandler.sendHealthScoreData(message);
+
+
 
                     }
                 } catch (Exception e) {

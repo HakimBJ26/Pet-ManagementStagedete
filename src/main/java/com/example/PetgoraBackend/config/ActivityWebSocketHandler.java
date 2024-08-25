@@ -47,6 +47,7 @@ public class ActivityWebSocketHandler extends TextWebSocketHandler {
         if (userId != null) {
             userSessions.put(userId, session);
         }
+        return ;
     }
 
     @Override

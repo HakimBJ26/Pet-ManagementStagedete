@@ -6,4 +6,5 @@ public record PetResponseDto(
         Integer age,
         Integer ownerId
 ) {
+
 }

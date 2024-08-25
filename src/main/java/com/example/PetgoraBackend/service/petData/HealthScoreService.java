@@ -1,6 +1,7 @@
 package com.example.PetgoraBackend.service.petData;
 
 import com.example.PetgoraBackend.dto.petData.HealthScoreDto;
+import com.example.PetgoraBackend.entity.petData.HealthScore;
 
 public interface HealthScoreService {
 
@@ -8,5 +9,5 @@ public interface HealthScoreService {
     HealthScoreDto saveHealthScore(HealthScoreDto healthScoreDTO);
     HealthScoreDto updateHealthScore(Long id, HealthScoreDto healthScoreDTO);
     void deleteHealthScore(Long id);
-    void saveOrUpdateHealthScore(HealthScoreDto healthScoreDTO);
+    void saveOrUpdateHealthScore(HealthScore healthScore);
 }
