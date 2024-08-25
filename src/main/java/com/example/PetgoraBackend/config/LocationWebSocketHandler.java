@@ -85,7 +85,6 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
             Position position = new Position(locationData.getLatitude(), locationData.getLongitude());
             webSocketService.updatePetPosition(locationData.getPetId(), position);
 
-            // Log pour déboguer
             System.out.println("Données de localisation reçues et mises à jour: " + locationData);
 
         } catch (Exception e) {
@@ -94,16 +93,12 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
     }
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        // Supposons que le message contient les données de localisation
         String payload = ((TextMessage) message).getPayload();
         JsonNode jsonNode = new ObjectMapper().readTree(payload);
-
-        // Extraire les données de localisation
         Integer petId = jsonNode.get("petId").asInt();
         double latitude = jsonNode.get("latitude").asDouble();
         double longitude = jsonNode.get("longitude").asDouble();
 
-        // Mettre à jour la position du pet dans le service WebSocket
         Position position = new Position(latitude, longitude);
         webSocketService.updatePetPosition(petId, position);
     }

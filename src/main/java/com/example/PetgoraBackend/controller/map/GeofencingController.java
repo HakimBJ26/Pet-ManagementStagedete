@@ -1,6 +1,5 @@
 package com.example.PetgoraBackend.controller.map;
 
-
 import com.example.PetgoraBackend.config.LocationWebSocketHandler;
 import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.dto.SafeZoneDto;
@@ -9,11 +8,9 @@ import com.example.PetgoraBackend.service.implementations.PetSafeZoneServiceImp;
 import com.example.PetgoraBackend.service.map.WebSocketService;
 import com.example.PetgoraBackend.service.map.ZoneService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
