@@ -10,4 +10,5 @@ public interface PetGoalService {
     List<PetGoal> getAllPetGoals();
     PetGoal updatePetGoal(Integer id, PetGoal petGoal);
     void deletePetGoal(Integer id);
+    public Optional<PetGoal> getPetGoalByPetId(Integer petId) ;
 }

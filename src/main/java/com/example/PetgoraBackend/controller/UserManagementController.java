@@ -125,4 +125,15 @@ public class UserManagementController {
         return ResponseEntity.ok().build();
     }
 
+    @PatchMapping("/image-url/{userId}")
+    public void updateUserImageUrl(@PathVariable Integer userId, @RequestParam String userImageUrl) {
+        usersManagementService.updateUserImageUrl(userId, userImageUrl);
+    }
+
+    @GetMapping("/image-url/{userId}")
+    public ResponseEntity<String> getUserImageUrl(@PathVariable Integer userId) {
+        String userImageUrl = usersManagementService.getUserImageUrl(userId);
+        return ResponseEntity.ok(userImageUrl);
+    }
+
 }

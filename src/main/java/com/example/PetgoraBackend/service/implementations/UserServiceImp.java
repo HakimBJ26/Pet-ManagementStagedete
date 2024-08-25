@@ -449,6 +449,20 @@ public class UserServiceImp implements IUsersManagementService {
     }
 
 
+    @Override
+    @Transactional
+    public void updateUserImageUrl(Integer userId, String userImageUrl) {
+        User user = usersRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setUserImageUrl(userImageUrl);
+        usersRepo.save(user);
+    }
+
+    @Override
+    public String getUserImageUrl(Integer userId) {
+        User user = usersRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getUserImageUrl();
+    }
+
 
 
 

@@ -229,7 +229,6 @@ public PetDto updateSafeZoneByType(Integer petId, SafeZoneType type, List<Positi
         List<PositionPetDto> positionDtos = dangerZone.getPositions().stream()
                 .map(pos -> new PositionPetDto(pos.getLat(), pos.getLng()))
                 .collect(Collectors.toList());
-
         return new DangerZoneDto(dangerZone.getId(), positionDtos);
     }
 
