@@ -69,24 +69,18 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
             locationData.setPetId(locationDataNode.get("petId").asInt());
             locationData.setLatitude(locationDataNode.get("latitude").asDouble());
             locationData.setLongitude(locationDataNode.get("longitude").asDouble());
-
             Pet pet = petRepository.findById(locationData.getPetId()).orElse(null);
-
             if (pet != null) {
                 User owner = pet.getOwner();
                 WebSocketSession session = userSessions.get(owner.getId());
-
                 // Send location data via WebSocket
                 if (session != null && session.isOpen()) {
                     session.sendMessage(new TextMessage(mapper.writeValueAsString(locationData)));
                 }
             }
-
             Position position = new Position(locationData.getLatitude(), locationData.getLongitude());
             webSocketService.updatePetPosition(locationData.getPetId(), position);
-
             System.out.println("Données de localisation reçues et mises à jour: " + locationData);
-
         } catch (Exception e) {
             e.printStackTrace();
         }

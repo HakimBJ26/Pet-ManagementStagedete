@@ -2,6 +2,7 @@ package com.example.PetgoraBackend.service;
 
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
+import com.example.PetgoraBackend.dto.PetsDTO;
 import com.example.PetgoraBackend.entity.Pet;
 import org.springframework.http.ResponseEntity;
 
@@ -16,7 +17,7 @@ public interface IPetService {
     PetResponseDto getPetById(Integer petId);
     List<PetDto> getAllPetsByOwner(Integer Id);
 
-    List<Pet> getCurrentUserPets();
+    public List<PetsDTO> getCurrentUserPets() ;
 
     Pet uploadPetImage(Integer petId, byte[] image);
 

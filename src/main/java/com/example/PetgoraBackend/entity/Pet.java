@@ -1,9 +1,9 @@
 package com.example.PetgoraBackend.entity;
 
 import com.example.PetgoraBackend.dto.PositionPetDto;
+import com.example.PetgoraBackend.entity.alerts.NotificationTimestamps;
 import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +45,9 @@ public class Pet {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL)
+    private NotificationTimestamps notificationTimestamps;
 
 
     public Integer getId() {
@@ -95,6 +98,10 @@ public class Pet {
         this.image = image;
     }
 
+    public void setNotificationTimestamps(NotificationTimestamps notificationTimestamps) {
+        this.notificationTimestamps = notificationTimestamps;
+    }
+
     public List<SafeZone> getSafeZones() {
         return safeZones;
     }
@@ -108,5 +115,9 @@ public class Pet {
 
     public void setDangerZones(List<DangerZone> dangerZones) {
         this.dangerZones = dangerZones;
+    }
+
+    public NotificationTimestamps getNotificationTimestamps() {
+        return notificationTimestamps;
     }
 }
