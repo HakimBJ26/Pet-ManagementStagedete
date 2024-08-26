@@ -47,4 +47,9 @@ public class PetGoalServiceImpl implements PetGoalService {
         }
         petGoalRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<PetGoal> getPetGoalByPetId(Integer petId) {
+        return petGoalRepository.findByPetId(petId);
+    }
 }

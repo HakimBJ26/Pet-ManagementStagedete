@@ -21,5 +21,7 @@ public interface IPetService {
 
     Pet uploadPetImage(Integer petId, byte[] image);
 
-}
+    PetsDTO updatePetImageUrl(Integer petId, String imageUrl);
 
+
+}

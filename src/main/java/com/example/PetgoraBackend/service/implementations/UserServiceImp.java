@@ -401,7 +401,7 @@ public class UserServiceImp implements IUsersManagementService {
                 .collect(Collectors.toList());
     }
 
-    @Override
+@Override
     public void saveMessagingToken(Integer userId, String token) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authenticatedEmail = authentication.getName();

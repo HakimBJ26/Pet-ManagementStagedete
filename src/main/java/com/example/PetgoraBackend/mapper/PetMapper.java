@@ -11,10 +11,12 @@ import org.mapstruct.factory.Mappers;
 @Mapper
 public interface PetMapper {
     PetMapper INSTANCE = Mappers.getMapper(PetMapper.class);
+
     @Mapping(source = "owner.id", target = "ownerId")
+    @Mapping(source = "imageUrl", target = "imageUrl")
     PetResponseDto toPetResponseDto(Pet pet);
+
     PetDto toPetDto(Pet pet);
     Pet toPet(PetDto petDto);
-
     CurrentUserPetResponseDto toCurrentUserPetResponseDto(Pet pet);
 }

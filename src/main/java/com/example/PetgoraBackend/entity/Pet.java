@@ -1,9 +1,9 @@
 package com.example.PetgoraBackend.entity;
 
+import com.example.PetgoraBackend.dto.PositionPetDto;
 import com.example.PetgoraBackend.entity.alerts.NotificationTimestamps;
 import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,15 +25,25 @@ public class Pet {
     }
 
     private String breed;
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     private Integer age;
+
+    private String imageUrl;
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
     @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private PetGoal petGoal;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "pet_id")
     private List<SafeZone> safeZones = new ArrayList<>();
-
-
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pet_id")
@@ -49,6 +59,7 @@ public class Pet {
 
     @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL)
     private NotificationTimestamps notificationTimestamps;
+
 
     public Integer getId() {
         return id;
