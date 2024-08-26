@@ -64,7 +64,7 @@ public class PetController {
 
     @PostMapping("/{id}/image")
     public Pet uploadPetImage(@PathVariable Integer id, @RequestParam("photo") MultipartFile file) {
-         try {
+        try {
             byte[] imageBytes = file.getBytes();
             return petService.uploadPetImage(id, imageBytes);
         } catch (IOException e) {
@@ -73,5 +73,13 @@ public class PetController {
         }
     }
 
-}
 
+    @PutMapping("/{petId}/image-url")
+    public ResponseEntity<PetsDTO> updatePetImageUrl(
+            @PathVariable Integer petId,
+            @RequestParam String imageUrl) {
+        PetsDTO updatedPet = petService.updatePetImageUrl(petId, imageUrl);
+        return ResponseEntity.ok(updatedPet);
+    }
+
+}

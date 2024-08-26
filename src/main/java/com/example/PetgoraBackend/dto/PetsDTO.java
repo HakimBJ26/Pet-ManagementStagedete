@@ -5,15 +5,18 @@ public class PetsDTO {
     private String name;
     private String breed;
     private Integer age;
+    private String imageUrl;
 
     // Constructor, getters, and setters
-    public PetsDTO(Integer id, String name, String breed, Integer age) {
+    public PetsDTO(Integer id, String name, String breed, Integer age, String imageUrl) {
         this.id = id;
         this.name = name;
         this.breed = breed;
         this.age = age;
+        this.imageUrl = imageUrl; // Set the imageUrl here
     }
 
+    // Getters and Setters for all fields
     public Integer getId() {
         return id;
     }
@@ -44,5 +47,13 @@ public class PetsDTO {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

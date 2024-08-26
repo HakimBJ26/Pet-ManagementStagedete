@@ -8,6 +8,7 @@ public record PetDto(
         String name,
         String breed,
         Integer age,
+
          List<SafeZoneDto> safeZones,
         List<DangerZoneDto> dangerZones
 

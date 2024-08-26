@@ -1,7 +1,7 @@
 package com.example.PetgoraBackend.entity;
 
-
 import jakarta.persistence.Embeddable;
+
 
 @Embeddable
 public class Position {
@@ -14,6 +14,8 @@ public class Position {
         this.lat = lat;
         this.lng = lng;
     }
+
+
 
     public double getLat() {
         return lat;
