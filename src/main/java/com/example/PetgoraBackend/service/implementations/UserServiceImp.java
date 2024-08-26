@@ -401,7 +401,7 @@ public class UserServiceImp implements IUsersManagementService {
                 .collect(Collectors.toList());
     }
 
-@Override
+    @Override
     public void saveMessagingToken(Integer userId, String token) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authenticatedEmail = authentication.getName();
@@ -448,6 +448,20 @@ public class UserServiceImp implements IUsersManagementService {
         usersRepo.save(authenticatedUser);
     }
 
+
+    @Override
+    @Transactional
+    public void updateUserImageUrl(Integer userId, String userImageUrl) {
+        User user = usersRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setUserImageUrl(userImageUrl);
+        usersRepo.save(user);
+    }
+
+    @Override
+    public String getUserImageUrl(Integer userId) {
+        User user = usersRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getUserImageUrl();
+    }
 
 
 
