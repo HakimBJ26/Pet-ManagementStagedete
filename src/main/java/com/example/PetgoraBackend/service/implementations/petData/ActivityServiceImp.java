@@ -1,15 +1,19 @@
-package com.example.PetgoraBackend.service.petData;
+package com.example.PetgoraBackend.service.implementations.petData;
 
 import com.example.PetgoraBackend.dto.petData.ActivityDto;
+import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.entity.petData.Activity;
+import com.example.PetgoraBackend.repository.PetRepo;
 import com.example.PetgoraBackend.repository.petData.ActivityRepository;
-import com.example.PetgoraBackend.repository.petData.ActivityRepository;
+import com.example.PetgoraBackend.service.petData.ActivityService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ActivityServiceImp implements ActivityService {
-
+    @Autowired
+    private PetRepo petRepo;
     @Autowired
     private ActivityRepository activityRepo;
 
@@ -40,6 +44,11 @@ public class ActivityServiceImp implements ActivityService {
 
     @Override
     public ActivityDto saveActivity(ActivityDto activityDTO) {
+
+        Pet pet = petRepo.findById(activityDTO.getPetId()).orElseThrow(() ->
+                new RuntimeException("Pet not found with id: " + activityDTO.getPetId()));
+
+
         Activity activity = new Activity();
         activity.setAverageBurn(activityDTO.getAverageBurn());
         activity.setHealthScore(activityDTO.getHealthScore());
@@ -47,7 +56,11 @@ public class ActivityServiceImp implements ActivityService {
         activity.setHeartRate(activityDTO.getHeartRate());
         activity.setLastUpdated(activityDTO.getLastUpdated());
         activity.setSteps(activityDTO.getSteps());
+        activity.setPet(pet);
+
         activityRepo.save(activity);
+
+        // Retourner le DTO
         return toDto(activity);
     }
 
@@ -58,8 +71,32 @@ public class ActivityServiceImp implements ActivityService {
 
     @Override
     public void saveOrUpdateActivity(Activity activity) {
+        // Retrieve the Pet entity associated with the Activity
+        Pet pet = petRepo.findById(activity.getPet().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Pet not found"));
 
+        // Attach the managed Pet entity to the Activity
+        activity.setPet(pet);
+
+
+        Activity existingActivity = activityRepo.findByPetId(pet.getId());
+        if (existingActivity != null) {
+            // Update the existing Activity record with new values
+            existingActivity.setAverageBurn(activity.getAverageBurn());
+            existingActivity.setHealthScore(activity.getHealthScore());
+            existingActivity.setTimeSpentInActivity(activity.getTimeSpentInActivity());
+            existingActivity.setHeartRate(activity.getHeartRate());
+            existingActivity.setLastUpdated(activity.getLastUpdated());
+            existingActivity.setSteps(activity.getSteps());
+
+            // Save the updated Activity record
+            activityRepo.save(existingActivity);
+        } else {
+            // Save the new Activity record if it doesn't exist
+            activityRepo.save(activity);
+        }
     }
+
 
     private ActivityDto toDto(Activity activity) {
         ActivityDto dto = new ActivityDto();

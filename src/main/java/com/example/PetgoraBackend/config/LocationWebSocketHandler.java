@@ -43,6 +43,7 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
         if (userId != null) {
             userSessions.put(userId, session);
         }
+        return ;
     }
 
     @Override
