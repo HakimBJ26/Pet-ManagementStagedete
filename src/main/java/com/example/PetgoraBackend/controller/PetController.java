@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -82,4 +83,12 @@ public class PetController {
         return ResponseEntity.ok(updatedPet);
     }
 
+
+    @PostMapping("/request-certif/{id}")
+    public ResponseEntity<PetResponseDto> updateRequestCertifAndBirthDate(
+            @PathVariable Integer id,
+            @RequestParam("birthDate") String birthDate) {
+        PetResponseDto updatedPet = petService.updateRequestCertifAndBirthDate(id, birthDate);
+        return ResponseEntity.ok(updatedPet);
+    }
 }

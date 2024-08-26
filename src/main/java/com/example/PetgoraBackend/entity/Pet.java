@@ -4,6 +4,7 @@ import com.example.PetgoraBackend.entity.alerts.NotificationTimestamps;
 import com.example.PetgoraBackend.entity.petData.PetGoal;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,38 @@ public class Pet {
     private Integer age;
 
     private String imageUrl;
+
+
+    private String blockchainCert;
+
+    private boolean requestCertif;
+
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    private LocalDate birthDate;  // New field for birth date
+
+    public void setRequestCertif(boolean requestCertif) {
+        this.requestCertif = requestCertif;
+    }
+
+    public boolean isRequestCertif() {
+        return requestCertif;
+    }
+
+    public String getBlockchainCert() {
+        return blockchainCert;
+    }
+
+    public void setBlockchainCert(String blockchainCert) {
+        this.blockchainCert = blockchainCert;
+    }
 
     public String getImageUrl() {
         return imageUrl;
