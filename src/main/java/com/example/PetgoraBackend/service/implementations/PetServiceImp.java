@@ -2,6 +2,7 @@ package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.dto.PetsDTO;
+import com.example.PetgoraBackend.dto.petData.PetCertifDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.entity.User; // Import User entity
@@ -224,6 +225,18 @@ public class PetServiceImp implements IPetService {
                 pet.isRequestCertif(),
                 pet.getBirthDate()
         );
+    }
+
+    public List<PetCertifDto> getPetsWithRequestedCertifAndNoBlockchainCert() {
+        List<Pet> pets = petRepo.findPetsWithRequestedCertifAndNoBlockchainCert();
+        return pets.stream().map(pet -> new PetCertifDto(
+                pet.getId(),
+                pet.getName(),
+                pet.getBreed(),
+                pet.getBirthDate(),
+                pet.getOwner().getId(),
+                pet.getImageUrl()
+        )).collect(Collectors.toList());
     }
 
 

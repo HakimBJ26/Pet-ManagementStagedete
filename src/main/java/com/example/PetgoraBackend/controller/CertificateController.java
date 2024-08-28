@@ -34,4 +34,16 @@ public class CertificateController {
             return new CertificateData(false, "", "", "", BigInteger.ZERO);
         }
     }
+
+    // Endpoint to decline a certificate request
+    @PostMapping("/decline")
+    public String declineCertificate(@RequestParam Integer uniqueId) {
+        try {
+            // Call the declineCertificate method in the BlockchainService
+            return blockchainService.declineCertificate(uniqueId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed to decline certificate request.";
+        }
+    }
 }
