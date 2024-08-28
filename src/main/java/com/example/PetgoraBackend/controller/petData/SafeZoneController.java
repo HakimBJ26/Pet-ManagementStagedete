@@ -2,6 +2,7 @@ package com.example.PetgoraBackend.controller.petData;
 
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.SafeZoneDto;
+import com.example.PetgoraBackend.dto.SafeZoneRequest;
 import com.example.PetgoraBackend.entity.Position;
 import com.example.PetgoraBackend.entity.SafeZoneType;
 import com.example.PetgoraBackend.service.IPetSafeZoneService;
@@ -30,6 +31,32 @@ public class SafeZoneController {
         PetDto updatedPet = mapService.addSafeZonesToPet(petId, safeZoneDtos);
         return ResponseEntity.ok(updatedPet);
     }
+    //1seul pos
+    @PostMapping("/set-single-position/{petId}")
+    public ResponseEntity<PetDto> addSinglePositionToSafeZone(
+            @PathVariable Integer petId,
+            @RequestBody SafeZoneRequest safeZoneRequest) {
+        PetDto updatedPet = mapService.addSinglePositionToSafeZone(
+                petId,
+                safeZoneRequest.type(),
+                safeZoneRequest.positionDto());
+        System.out.println("Successfully updated the pet with id: " + petId);
+        return ResponseEntity.ok(updatedPet);}
+
+
+//    @PostMapping("/set-single-position/{petId}")
+//    public ResponseEntity<PetDto> addPositionsToSafeZone(
+//            @PathVariable Integer petId,
+//            @RequestBody SafeZoneRequest safeZoneRequest) {
+//
+//        PetDto updatedPet = mapService.addSinglePositionToSafeZone(
+//                petId,
+//                safeZoneRequest.type(),
+//                safeZoneRequest.positions());
+//        System.out.println("Successfully updated the pet with id: " + petId);
+//        return ResponseEntity.ok(updatedPet);
+//    }
+
 
     @GetMapping("/{petId}/type/{type}")
     public ResponseEntity<List<Position>> getPositionsByPetIdAndType(
@@ -94,5 +121,8 @@ public class SafeZoneController {
         List<Position> positions = mapService.getPositionsByPetIdAndType(petId, SafeZoneType.PARK);
         return ResponseEntity.ok(positions);
     }
+
+
+
 
 }
