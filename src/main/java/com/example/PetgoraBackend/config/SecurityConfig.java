@@ -43,7 +43,8 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/webjars/**",
                         "/api-docs/**",
-                        "/swagger-ui.html", "/api/**"
+                        "/swagger-ui.html", "/api/**",
+                        "/appointments/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
