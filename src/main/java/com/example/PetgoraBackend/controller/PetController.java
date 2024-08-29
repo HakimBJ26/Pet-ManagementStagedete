@@ -3,6 +3,7 @@ package com.example.PetgoraBackend.controller;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.dto.PetsDTO;
+import com.example.PetgoraBackend.dto.petData.PetCertifDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.service.IPetService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -82,4 +84,17 @@ public class PetController {
         return ResponseEntity.ok(updatedPet);
     }
 
+
+    @PostMapping("/request-certif/{id}")
+    public ResponseEntity<PetResponseDto> updateRequestCertifAndBirthDate(
+            @PathVariable Integer id,
+            @RequestParam("birthDate") String birthDate) {
+        PetResponseDto updatedPet = petService.updateRequestCertifAndBirthDate(id, birthDate);
+        return ResponseEntity.ok(updatedPet);
+    }
+
+    @GetMapping("/certif-requests")
+    public List<PetCertifDto> getPetsWithRequestedCertifAndNoBlockchainCert() {
+        return petService.getPetsWithRequestedCertifAndNoBlockchainCert();
+    }
 }

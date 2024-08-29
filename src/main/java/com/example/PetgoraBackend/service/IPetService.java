@@ -3,9 +3,11 @@ package com.example.PetgoraBackend.service;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.dto.PetsDTO;
+import com.example.PetgoraBackend.dto.petData.PetCertifDto;
 import com.example.PetgoraBackend.entity.Pet;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IPetService {
@@ -22,6 +24,9 @@ public interface IPetService {
     Pet uploadPetImage(Integer petId, byte[] image);
 
     PetsDTO updatePetImageUrl(Integer petId, String imageUrl);
+
+    public PetResponseDto updateRequestCertifAndBirthDate(Integer id, String birthDateStr) ;
+    public List<PetCertifDto> getPetsWithRequestedCertifAndNoBlockchainCert() ;
 
 
 }
