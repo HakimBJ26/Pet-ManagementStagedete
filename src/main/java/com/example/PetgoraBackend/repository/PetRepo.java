@@ -16,9 +16,14 @@ import java.util.Optional;
 public interface PetRepo extends JpaRepository<Pet, Integer> {
     List<Pet> findByOwner_Id(Integer ownerId);
 
+
+    @Query("SELECT p FROM Pet p WHERE p.requestCertif = true AND p.blockchainCert IS NULL")
+    List<Pet> findPetsWithRequestedCertifAndNoBlockchainCert();
+
     @Query("SELECT p FROM Pet p LEFT JOIN FETCH p.safeZones WHERE p.id = :id")
     Optional<Pet> findByIdWithSafeZones(@Param("id") Integer id);
     @Query("SELECT sz FROM SafeZone sz JOIN sz.pet p WHERE p.id = :petId")
     List<SafeZone> findSafeZonesByPetId(@Param("petId") Integer petId);
+
 
 }

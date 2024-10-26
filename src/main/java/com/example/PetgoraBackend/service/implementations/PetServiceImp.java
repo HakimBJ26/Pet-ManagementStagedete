@@ -2,6 +2,7 @@ package com.example.PetgoraBackend.service.implementations;
 
 import com.example.PetgoraBackend.dto.PetResponseDto;
 import com.example.PetgoraBackend.dto.PetsDTO;
+import com.example.PetgoraBackend.dto.petData.PetCertifDto;
 import com.example.PetgoraBackend.entity.Pet;
 import com.example.PetgoraBackend.dto.PetDto;
 import com.example.PetgoraBackend.entity.User; // Import User entity
@@ -21,12 +22,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PetServiceImp implements IPetService {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     private final PetRepo petRepo;
     private VitalSignsRepository vitalSignsRepository ;
@@ -139,7 +144,7 @@ public class PetServiceImp implements IPetService {
 
         // Convert the list of Pet entities to a list of PetDTOs
         List<PetsDTO> petDTOs = pets.stream()
-                .map(pet -> new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl()))
+                .map(pet -> new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl(), pet.getBlockchainCert()))
                 .collect(Collectors.toList());
 
         return petDTOs;
@@ -191,7 +196,47 @@ public class PetServiceImp implements IPetService {
         petRepo.save(pet);
 
         // Return the updated PetDTO
-        return new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl());
+        return new PetsDTO(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getImageUrl(), pet.getBlockchainCert());
+    }
+
+
+
+    @Override
+    public PetResponseDto updateRequestCertifAndBirthDate(Integer id, String birthDateStr) {
+        Pet pet = petRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pet not found"));
+
+        // Parse the date using the custom formatter
+        LocalDate birthDate = LocalDate.parse(birthDateStr, DATE_FORMATTER);
+
+        pet.setRequestCertif(true);
+        pet.setBirthDate(birthDate);
+
+        petRepo.save(pet);
+
+        // Convert to PetResponseDto
+        return new PetResponseDto(
+                pet.getName(),
+                pet.getBreed(),
+                pet.getAge(),
+                pet.getOwner().getId(),
+                pet.getImageUrl(),
+                pet.getBlockchainCert(),
+                pet.isRequestCertif(),
+                pet.getBirthDate()
+        );
+    }
+
+    public List<PetCertifDto> getPetsWithRequestedCertifAndNoBlockchainCert() {
+        List<Pet> pets = petRepo.findPetsWithRequestedCertifAndNoBlockchainCert();
+        return pets.stream().map(pet -> new PetCertifDto(
+                pet.getId(),
+                pet.getName(),
+                pet.getBreed(),
+                pet.getBirthDate(),
+                pet.getOwner().getId(),
+                pet.getImageUrl()
+        )).collect(Collectors.toList());
     }
 
 
